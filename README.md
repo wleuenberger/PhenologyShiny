@@ -15,7 +15,10 @@ Phenology data and shiny creation for lesson plan
 
 [Form_BS162_2019_2019_12_19_14_57_47_271712.csv](Form_BS162_2019_2019_12_19_14_57_47_271712.csv): 2019 data
 
-2021Fall_TreePhenologyData_All_wPhotoLinks: 2021 data. This data is in a different format than the previous years
+2021Fall_TreePhenologyData_All_wPhotoLinks.xlsx: 2021 data. This data is in a different format than the previous years
 
 ## Code
 
+[DataManagement.Rmd](DataManagement.Rmd): R code to process all four data files and produce [CleanedPhenologyData2017to2021](CleanedPhenologyData2017to2021.csv). Also produces [DataManagement.md](DataManagement.md) (readable on GitHub) and [DataManagement.html](DataManagement.html) (readable in browser) that detail the data cleaning process. [DataManagement_files](DataManagement_files) is also part of this process.
+
+## Shiny
