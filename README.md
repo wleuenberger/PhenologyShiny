@@ -7,7 +7,7 @@ Phenology data and shiny creation for lesson plan
 
 ## Data
 
-[CleanedPhenologyData2017to2021](CleanedPhenologyData2017to2021.csv): This file contains all of the data and is cleaned. This file is created from the [DataManagement.Rmd](DataManagement.Rmd) code.
+[CleanedPhenologyData2017to2021.csv](CleanedPhenologyData2017to2021.csv): This file contains all of the data and is cleaned. This file is created from the [DataManagement.Rmd](DataManagement.Rmd) code.
 
 [test_form5_2019_12_19_14_56_01_542496.csv](test_form5_2019_12_19_14_56_01_542496.csv): 2017 data
 
