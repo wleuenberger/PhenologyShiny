@@ -1,0 +1,284 @@
+---
+title: "DataManagement"
+author: "Wendy Leuenberger"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load packages, include = FALSE}
+library(magrittr)
+library(tidyverse)
+library(readxl)
+library(lubridate)
+```
+
+```{r figure settings, include = FALSE}
+tbw = theme_bw(base_size = 18)
+th = theme(panel.grid = element_blank())
+```
+
+
+## Read in data
+
+Note: This R file should be located in the same working directory as the data. Otherwise reading data from other places in the google drive is challenging and I couldn't get it to work. Might be tricky since the drive is "shared with me" not a shared drive or my drive.
+
+```{r, warning = FALSE, message = FALSE}
+Data2017 <- read_csv('test_form5_2019_12_19_14_56_01_542496.csv')
+Data2018 <- read_csv(
+  'Form_BS162_2018_v2_2019_12_19_14_56_54_642030.csv')
+Data2019 <- read_csv(
+  'Form_BS162_2019_2019_12_19_14_57_47_271712.csv')
+Data2021 <- read_xlsx(
+  '2021Fall_TreePhenologyData_All_wPhotoLinks.xlsx')
+```
+
+## Merge data
+
+### Merge 2017-2019
+
+```{r}
+Data171819 <- Data2017 %>% 
+  bind_rows(Data2018) %>% 
+  bind_rows(Data2019)
+```
+
+### Species columns 
+
+```{r, message = FALSE}
+# Remove \n from the SPECIES column
+Data2021 %<>% 
+  mutate(SPECIES = str_remove(SPECIES, '\n'))
+
+# Take a look at the two species columns
+Data2021$SPECIES %>% table
+Data171819$species %>% table
+
+# Create dataframe with both styles of species names
+SpeciesLookUp <- tibble(
+  SPECIES = unique(Data2021$SPECIES) %>% sort,
+  species = c(unique(Data171819$species), 'OSVI') %>% sort)
+
+# Add the species names to both spreadsheets
+Data171819 %<>% 
+  left_join(SpeciesLookUp)
+Data2021 %<>% 
+  left_join(SpeciesLookUp)
+
+```
+
+### Leaf color columns
+
+Will probably want to round to the nearest 5% since most people did so.
+
+```{r, message = FALSE}
+Data171819$color %>% table
+# ggplot(Data171819, aes(x = color)) +
+#   geom_bar() + tbw + th
+Data2021$`LEAF COLOR` %>% table
+# Note: bars barely show up due to 0.01 width
+# ggplot(Data2021, aes(x = `LEAF COLOR`)) +
+#   geom_bar() + tbw + th
+```
+
+### Leaf fall columns
+
+I'm not sure how students found that a negative percent of leaves were falling. We can remove those three rows since we have replication and don't know what to do with them. There is also a lot of precision, 0.0001 recorded in 2021. We'll need to round those values.
+
+```{r}
+Data171819$fall %>% table
+Data2021$`LEAF FALL` %>% table
+```
+
+### Accession number columns
+
+140 trees are in both datasets. 36 trees are only in one dataset.
+
+```{r}
+# Most individual/ACCESSION values are in both dataframes
+unique(Data171819$individual) %in% 
+  unique(Data2021$ACCESSION) %>%
+  table
+
+unique(Data2021$ACCESSION) %in% 
+  unique(Data171819$individual) %>%
+  table
+
+# Look at the values that are NOT in both data frames
+unique(Data171819$individual)[!unique(Data171819$individual) %in% 
+  unique(Data2021$ACCESSION)]
+
+unique(Data2021$ACCESSION)[!unique(Data2021$ACCESSION) %in% 
+  unique(Data171819$individual)]
+```
+
+### Photo links
+
+```{r}
+Data171819$photo %>% head
+Data2021$`PICTURE ADDRESS` %>% head
+
+
+```
+
+
+
+### Rename columns as needed
+
+```{r}
+# Rename columns
+Data171819 %<>% 
+  rename(DATE = `_submission_time`)
+
+Data2021 %<>%
+  rename(color = `LEAF COLOR`,
+         fall = `LEAF FALL`,
+         individual = ACCESSION,
+         photo = `PICTURE ADDRESS`)
+```
+
+### Add lat, long, altitude to 2021 data
+
+Tried to do this, but it resulted in almost 500,000 rows of data due to rows of data with multiple lat/long/alt datasets. The problem is not just the altitude data, as removing that column doesn't help much.
+
+```{r, message = FALSE}
+Data2021 %>% 
+  left_join(Data171819[,c('individual', '_tree_gps_latitude',
+                         '_tree_gps_longitude', 
+                         '_tree_gps_altitude')]) %>% dim
+
+Data2021 %>% 
+  left_join(Data171819[,c('individual', '_tree_gps_latitude',
+                         '_tree_gps_longitude')]) %>% dim
+
+```
+
+
+### Merge select columns
+
+```{r}
+# Currently including group_num and student_id in case we want to use them as random effects. We don't have them for all years though
+AllData <- Data171819[,c('SPECIES', 'species', 'individual',
+                         'color', 'fall', 'DATE',
+                         "_tree_gps_latitude",
+                         '_tree_gps_longitude',
+                         '_tree_gps_altitude',
+                         'group_num', 'student_id',
+                         'photo')] %>% 
+  bind_rows(Data2021[,c('SPECIES', 'species', 'individual',
+                        'color', 'fall', 'DATE',
+                        # "_tree_gps_latitude",
+                        # '_tree_gps_longitude',
+                        # '_tree_gps_altitude',
+                        'photo')])
+
+# Rename lat/long/altitude for ease
+AllData %<>% rename(Latitude = '_tree_gps_latitude',
+                    Longitude = '_tree_gps_longitude',
+                    Altitude = '_tree_gps_altitude')
+
+```
+
+
+## Remove questionable data
+
+```{r}
+# Negative % leaf fall
+AllData %>% 
+  filter(color < 0 |
+         fall < 0)
+# Remove negatives
+AllData %<>% 
+  filter(color >= 0,
+         fall >= 0)
+```
+
+## Round leaf color and leaf fall data
+
+```{r}
+AllData %<>% 
+  mutate(ColorR1 = round(color, digits = 0),
+         ColorR5 = round(color / 5, digits = 0) * 5,
+         ColorR10 = round(color, digits = -1),
+         FallR1 = round(fall, digits = 0),
+         FallR5 = round(fall / 5, digits = 0) * 5,
+         FallR10 = round(fall, digits = -1))
+AllData %>% 
+  select(color, ColorR1, ColorR5, ColorR10, 
+         fall, FallR1, FallR5, FallR10) %>% 
+  unique %>% 
+  head(20)
+```
+
+### Visualize
+
+People seemed to naturally round to 5% in many cases, and somewhat to 10% as well. May want to use these smoothed values, though might not be necessary.
+
+```{r}
+ForPlot <- AllData %>% 
+  pivot_longer(cols = c(ColorR1, ColorR5, ColorR10,
+                        FallR1, FallR5, FallR10),
+               names_to = 'Metric', values_to = 'Values')
+ggplot(ForPlot %>% filter(Metric %in% c('ColorR1', 'FallR1')), 
+       aes(x = Values)) +
+  geom_bar() + 
+  tbw + th + 
+  facet_wrap(~ Metric)
+
+ggplot(ForPlot %>% filter(Metric %in% c('ColorR5', 'FallR5')), 
+       aes(x = Values)) +
+  geom_bar() + 
+  tbw + th + 
+  facet_wrap(~ Metric)
+
+ggplot(ForPlot %>% filter(Metric %in% c('ColorR10', 'FallR10')), 
+       aes(x = Values)) +
+  geom_bar() + 
+  tbw + th + 
+  facet_wrap(~ Metric)
+
+```
+
+## Date information
+
+Extract date (YMD). Columns for year, month, day, week
+
+```{r}
+AllData %<>% 
+  mutate(Year = year(DATE),
+         Month = month(DATE),
+         Day = day(DATE),
+         Week = week(DATE))
+
+AllData %>% 
+  select(DATE, Year, Month, Day, Week) %>% 
+  unique %>% 
+  tail
+```
+
+## Unique observer
+
+```{r}
+# We have group_num and student_id for some sets of data. Not sure it'll be useful since we don't have them for everything. If needed though, here's a unique group_num/student_id/year variable
+AllData %<>% 
+  mutate(UniqueGroup = paste(Year, group_num, sep = "_"),
+         UniqueStudent = paste(Year, group_num, student_id, 
+                               sep = "_"))
+```
+
+
+## Export cleaned data
+
+```{r}
+# Commented out since it's already run.
+# Uncomment if needed to re-export.
+# write.csv(AllData, file = 'CleanedPhenologyData2017to2021.csv',
+#           row.names = FALSE)
+
+```
+
