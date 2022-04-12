@@ -9,7 +9,7 @@ WendyPath <- 'C:/Users/Wendy/OneDrive\ -\ Michigan\ State\ University/GitHub/Phe
 KaraPath <- "/Users/karachristinad/Library/CloudStorage/OneDrive-MichiganStateUniversity/CSS 844/Module 3/PhenologyData/"
 
 # Change Path to your path for the code 
-phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2021.csv"))
+phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2021.csv"))
 
 # Make simpler data to play with
 SimplePlot <- phen %>% 
@@ -24,18 +24,19 @@ SimplePlot <- phen %>%
 ui <- pageWithSidebar(
         headerPanel('Phenology'),
         sidebarPanel(width = 4,
-             selectInput('SPECIES', 'Choose a species:',paste(unique(phen$SPECIES))),
-             selectInput("variable", "Variable:", 
+             selectInput('SPECIES', 'Choose a species:',paste(unique(SimplePlot$SPECIES))),
+             selectInput("Measurement", "Variable:", 
                          c("Leaf Color" = "ColorR5",
                            "Leaf Fall" = "FallR5"))),
-             mainPanel())
+             mainPanel(plotOutput("plot")))
+
 
 # Define server
 server <- function(input, output) {
         selectedData <- reactive({
-          SimplePlot %>% 
-            filter(SPECIES == input$SPECIES,
-                   Measurement == input$variable)
+                SimplePlot %>% 
+                filter(SPECIES == input$SPECIES,
+                       Measurement == input$Measurement)
         })
     
         # formulaText <- reactive({
@@ -49,8 +50,9 @@ server <- function(input, output) {
         
         output$plot <- renderPlot({
                 plot(as.formula(formulaText),
-                     data=selectedData)
+                     data=selectedData())
         })
         
 }
+
 shinyApp(ui, server)
