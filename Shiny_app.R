@@ -31,6 +31,7 @@ ColorFallLong <- phen %>%
   filter(Rounding == 5,
          Week %in% 36:49) 
 
+# At what point did the values reach 50%? If they reached 50%?
 ColorFall50 <- ColorFallLong %>% 
   group_by(individual, Year) %>%
   filter(Values >= 50) %>% 
@@ -39,34 +40,16 @@ ColorFall50 <- ColorFallLong %>%
 # ggplot settings ####
 tbw <- theme_bw(base_size = 14)
 
-# ggplot(ColorFallLong %>% filter(species == 'ACRU'), 
+# Test plot outside of shiny
+# ggplot(ColorFallLong %>% filter(species == 'ACRU'),
 #        aes(x = Week, y = Values, color = factor(Year),
 #            fill = factor(Year))) +
 #   geom_smooth() +
 #   # geom_jitter(alpha = 0.2) +
-#   tbw + 
+#   tbw +
 #   facet_grid(~ ColorFall)
-#   
 
-# Make simpler data to play with
-SimplePlot <- phen %>%
-  group_by(SPECIES, species, Year, Week) %>% 
-  summarize(ColorR5 = mean(ColorR5),
-            FallR5 = mean(FallR5)) %>% 
-  pivot_longer(cols = c(ColorR5, FallR5), 
-               names_to = 'Measurement',
-               values_to = 'Values') 
 
-SimplePlot$Year <- as.factor(SimplePlot$Year)
-
-SimplePlot2 <- phen %>% # for within species variation
-        group_by(SPECIES, individual, Year) %>% 
-        summarize(ColorR5 = mean(ColorR5),
-                  FallR5 = mean(FallR5)) %>% 
-        pivot_longer(cols = c(ColorR5, FallR5), 
-                     names_to = 'Measurement',
-                     values_to = 'Values')
-SimplePlot2$Year <- as.factor(SimplePlot2$Year)
 
 # Define UI
 ui <- pageWithSidebar(
