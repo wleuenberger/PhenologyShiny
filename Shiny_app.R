@@ -32,8 +32,9 @@ ColorFallLong <- phen %>%
          Week %in% 36:49) 
 
 ColorFall50 <- ColorFallLong %>% 
-  group_by(individual, Year) %>% 
-  filter(abs(Values - 50) == min(abs(Values - 50)))
+  group_by(individual, Year) %>%
+  filter(Values >= 50) %>% 
+  filter((Values - 50) == min(Values - 50))
 
 # ggplot settings ####
 tbw <- theme_bw(base_size = 14)
