@@ -56,7 +56,7 @@ fw <- facet_wrap(~ ColorFall)
 ui <- pageWithSidebar(
         headerPanel('Phenology'),
         sidebarPanel(width = 4,
-             selectInput('SPECIES', 'Choose a species:',paste(unique(SimplePlot$SPECIES)))),
+             selectInput('SPECIES', 'Choose a species:',paste(unique(ColorFallLong$SPECIES)))),
              # selectInput("Measurement", "Variable:", 
              #             c("Leaf Color" = "Color",
              #               "Leaf Fall" = "Fall"))),
