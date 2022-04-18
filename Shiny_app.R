@@ -9,7 +9,7 @@ WendyPath <- 'C:/Users/Wendy/OneDrive\ -\ Michigan\ State\ University/GitHub/Phe
 KaraPath <- "/Users/karachristinad/Library/CloudStorage/OneDrive-MichiganStateUniversity/CSS 844/Module 3/PhenologyData/"
 
 # Change Path to your path for the code 
-phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2021.csv"))
+phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2021.csv"))
 
 # Make simpler data to play with
 SimplePlot <- phen %>%
@@ -80,7 +80,8 @@ server <- function(input, output) {
                         geom_point(aes(color=Year)) +
                         geom_line(aes(color=Year)) +
                         labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
-                        theme_bw()
+                        theme_bw() +
+                        ylim(0, 100)
         })
         # this second plot needs some work - currently shows yearly average percent of color
         # should make it so that x = year, y = date when the individual reached 50% color/fall
@@ -89,7 +90,8 @@ server <- function(input, output) {
                         geom_point(aes(color=individual)) +
                         geom_line(aes(color=individual)) +
                         labs(x="Year", y="Percent of Leaf Color/Fall") +
-                        theme_bw()
+                        theme_bw() +
+                        ylim(0, 100)
         })
 }
 
