@@ -4,9 +4,6 @@ library(magrittr)
 library(tidyverse)
 # geosphere is for daylength. Can probably remove once we merge Group 3's data
 library(geosphere)
-devtools::install_github("zeehio/facetscales")
-library(g)
-library(facetscales)
 
 # Standard error function
 se <- function(x, na.rm = FALSE){ 
