@@ -3,6 +3,11 @@ library(shiny)
 library(magrittr)
 library(tidyverse)
 
+# Standard error function
+se <- function(x, na.rm = FALSE){ 
+  sqrt(var(x, na.rm = na.rm) / length(x))
+}
+
 # Get data
 # Paths to our individual computers
 WendyPath <- 'C:/Users/Wendy/OneDrive\ -\ Michigan\ State\ University/GitHub/PhenologyShiny/'
@@ -11,6 +16,37 @@ KaraPath <- "/Users/karachristinad/Library/CloudStorage/OneDrive-MichiganStateUn
 # Change Path to your path for the code 
 phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2021.csv"))
 
+# Summarize data for manipulation
+ColorFallLong <- phen %>% 
+  pivot_longer(cols = starts_with(c('Color', 'Fall'), 
+                                  ignore.case = FALSE), 
+               names_to = 'Metric',
+               values_to = 'Values') %>% 
+  mutate(ColorFall = str_extract(Metric, 
+                                 '[:upper:]{1}[:lower:]{3,4}'),
+         Rounding = str_extract(Metric, '[:digit:]{1,2}'),
+         Year = factor(Year)) %>% 
+  select(SPECIES, species, individual, Year, Month, Day, Week, 
+         ColorFall, Rounding, Values) %>% 
+  filter(Rounding == 5,
+         Week %in% 36:49) 
+
+ColorFall50 <- ColorFallLong %>% 
+  group_by(individual, Year) %>% 
+  filter(abs(Values - 50) == min(abs(Values - 50)))
+
+# ggplot settings ####
+tbw <- theme_bw(base_size = 14)
+
+# ggplot(ColorFallLong %>% filter(species == 'ACRU'), 
+#        aes(x = Week, y = Values, color = factor(Year),
+#            fill = factor(Year))) +
+#   geom_smooth() +
+#   # geom_jitter(alpha = 0.2) +
+#   tbw + 
+#   facet_grid(~ ColorFall)
+#   
+
 # Make simpler data to play with
 SimplePlot <- phen %>%
   group_by(SPECIES, species, Year, Week) %>% 
@@ -18,7 +54,8 @@ SimplePlot <- phen %>%
             FallR5 = mean(FallR5)) %>% 
   pivot_longer(cols = c(ColorR5, FallR5), 
                names_to = 'Measurement',
-               values_to = 'Values')
+               values_to = 'Values') 
+
 SimplePlot$Year <- as.factor(SimplePlot$Year)
 
 SimplePlot2 <- phen %>% # for within species variation
@@ -36,8 +73,8 @@ ui <- pageWithSidebar(
         sidebarPanel(width = 4,
              selectInput('SPECIES', 'Choose a species:',paste(unique(SimplePlot$SPECIES))),
              selectInput("Measurement", "Variable:", 
-                         c("Leaf Color" = "ColorR5",
-                           "Leaf Fall" = "FallR5"))),
+                         c("Leaf Color" = "Color",
+                           "Leaf Fall" = "Fall"))),
              mainPanel(type="tabs",
                        tabsetPanel(
                                tabPanel("Yearly variation - one species",
@@ -54,44 +91,34 @@ ui <- pageWithSidebar(
 # Define server
 server <- function(input, output) {
         selectedData <- reactive({
-                SimplePlot %>% 
+                ColorFallLong %>% 
                 filter(SPECIES == input$SPECIES,
-                       Measurement == input$Measurement)
+                       ColorFall == input$Measurement)
         })
         selectedData2 <- reactive({
-                SimplePlot2 %>% 
+                ColorFall50 %>% 
                         filter(SPECIES == input$SPECIES,
-                               Measurement == input$Measurement)
+                               ColorFall == input$Measurement,
+                               Values %in% 40:60)
         })
        
-        formulaText <- 'Values ~ Week' #KD: do we need this anymore?
-        
-        output$caption <- renderText({ #KD: also not sure we need this, not sure if it even works anyways
-                formulaText
-        })
-        
-        #output$plot <- renderPlot({
-        #        plot(as.formula(formulaText),
-        #             data=selectedData())
-        #})
-        
         output$plot <- renderPlot({
                 ggplot(selectedData(), aes(x=Week, y=Values, group=Year)) +
-                        geom_point(aes(color=Year)) +
-                        geom_line(aes(color=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_smooth(aes(color=Year, fill = Year)) +
                         labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
-                        theme_bw() +
-                        ylim(0, 100)
+                        tbw + ylim(0, 100) + xlim(36, 49)
         })
         # this second plot needs some work - currently shows yearly average percent of color
         # should make it so that x = year, y = date when the individual reached 50% color/fall
         output$plot2 <- renderPlot({
-                ggplot(selectedData2(), aes(x=Year, y=Values, group=individual)) +
-                        geom_point(aes(color=individual)) +
-                        geom_line(aes(color=individual)) +
-                        labs(x="Year", y="Percent of Leaf Color/Fall") +
-                        theme_bw() +
-                        ylim(0, 100)
+                ggplot(selectedData2(), 
+                       aes(x=Year, y=Week)) +
+                        geom_boxplot() +
+                        geom_jitter(aes(color=individual)) +
+                        # labs(x="Week", y="Percent of Leaf Color/Fall") +
+                        # facet_wrap(~ Year) +
+                        tbw + ylim(36, 49)
         })
 }
 
