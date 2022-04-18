@@ -38,7 +38,8 @@ ColorFall50 <- ColorFallLong %>%
   filter((Values - 50) == min(Values - 50))
 
 # ggplot settings ####
-tbw <- theme_bw(base_size = 14)
+tbw <- theme_bw(base_size = 16)
+fw <- facet_wrap(~ ColorFall)
 
 # Test plot outside of shiny
 # ggplot(ColorFallLong %>% filter(species == 'ACRU'),
@@ -55,10 +56,10 @@ tbw <- theme_bw(base_size = 14)
 ui <- pageWithSidebar(
         headerPanel('Phenology'),
         sidebarPanel(width = 4,
-             selectInput('SPECIES', 'Choose a species:',paste(unique(SimplePlot$SPECIES))),
-             selectInput("Measurement", "Variable:", 
-                         c("Leaf Color" = "Color",
-                           "Leaf Fall" = "Fall"))),
+             selectInput('SPECIES', 'Choose a species:',paste(unique(SimplePlot$SPECIES)))),
+             # selectInput("Measurement", "Variable:", 
+             #             c("Leaf Color" = "Color",
+             #               "Leaf Fall" = "Fall"))),
              mainPanel(type="tabs",
                        tabsetPanel(
                                tabPanel("Yearly variation - one species",
@@ -76,14 +77,13 @@ ui <- pageWithSidebar(
 server <- function(input, output) {
         selectedData <- reactive({
                 ColorFallLong %>% 
-                filter(SPECIES == input$SPECIES,
-                       ColorFall == input$Measurement)
+                filter(SPECIES == input$SPECIES)#,
+                       # ColorFall == input$Measurement)
         })
         selectedData2 <- reactive({
                 ColorFall50 %>% 
-                        filter(SPECIES == input$SPECIES,
-                               ColorFall == input$Measurement,
-                               Values %in% 40:60)
+                        filter(SPECIES == input$SPECIES)#,
+                               # ColorFall == input$Measurement)
         })
        
         output$plot <- renderPlot({
@@ -91,7 +91,8 @@ server <- function(input, output) {
                         # geom_point(aes(color=Year)) +
                         geom_smooth(aes(color=Year, fill = Year)) +
                         labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
-                        tbw + ylim(0, 100) + xlim(36, 49)
+                        tbw + ylim(0, 100) + xlim(36, 49) +
+                        fw
         })
         # this second plot needs some work - currently shows yearly average percent of color
         # should make it so that x = year, y = date when the individual reached 50% color/fall
@@ -102,7 +103,8 @@ server <- function(input, output) {
                         geom_jitter(aes(color=individual)) +
                         # labs(x="Week", y="Percent of Leaf Color/Fall") +
                         # facet_wrap(~ Year) +
-                        tbw + ylim(36, 49)
+                        tbw + ylim(36, 49) + 
+                        fw
         })
 }
 
