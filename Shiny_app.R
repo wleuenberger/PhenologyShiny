@@ -2,6 +2,11 @@
 library(shiny)
 library(magrittr)
 library(tidyverse)
+# geosphere is for daylength. Can probably remove once we merge Group 3's data
+library(geosphere)
+devtools::install_github("zeehio/facetscales")
+library(g)
+library(facetscales)
 
 # Standard error function
 se <- function(x, na.rm = FALSE){ 
@@ -16,19 +21,24 @@ KaraPath <- "/Users/karachristinad/Library/CloudStorage/OneDrive-MichiganStateUn
 # Change Path to your path for the code 
 phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2021.csv"))
 
+# Add daylength data
+phen %<>% 
+  mutate(DayLength = geosphere::daylength(Latitude, 
+                                          paste(Year, Month, Day, sep = '-')))
+
 # Summarize data for manipulation
 ColorFallLong <- phen %>% 
-  pivot_longer(cols = starts_with(c('Color', 'Fall'), 
+  pivot_longer(cols = starts_with(c('Color', 'Fall', 'DayLength'), 
                                   ignore.case = FALSE), 
                names_to = 'Metric',
                values_to = 'Values') %>% 
   mutate(ColorFall = str_extract(Metric, 
-                                 '[:upper:]{1}[:lower:]{3,4}'),
+                                 '[:upper:]{1}[:lower:]{3,5}'),
          Rounding = str_extract(Metric, '[:digit:]{1,2}'),
          Year = factor(Year)) %>% 
   select(SPECIES, species, individual, Year, Month, Day, Week, 
          ColorFall, Rounding, Values) %>% 
-  filter(Rounding == 5,
+  filter(Rounding == 5 | is.na(Rounding),
          Week %in% 36:49) 
 
 # At what point did the values reach 50%? If they reached 50%?
@@ -39,7 +49,17 @@ ColorFall50 <- ColorFallLong %>%
 
 # ggplot settings ####
 tbw <- theme_bw(base_size = 16)
-fw <- facet_wrap(~ ColorFall)
+fw <- facet_grid(ColorFall ~ ., scales = 'free_y')
+
+# Fake data for axes limits
+Limits <- tibble(ColorFall = ColorFallLong$ColorFall %>% unique %>% sort,
+                 ymin = c(-10, -10, 6),
+                 ymax = c(110, 110, 18))
+ll <- with(Limits,
+           data.frame(Values = c(ymin, ymax),
+                      ColorFall = c(ColorFall, ColorFall)))
+ll$Year <- ColorFallLong$Year[1]
+ll$Week <- ColorFallLong$Week[1]
 
 # Test plot outside of shiny
 # ggplot(ColorFallLong %>% filter(species == 'ACRU'),
@@ -49,15 +69,22 @@ fw <- facet_wrap(~ ColorFall)
 #   # geom_jitter(alpha = 0.2) +
 #   tbw +
 #   facet_grid(~ ColorFall)
-
+ggplot(ColorFallLong %>% filter(species == 'FAGR'),
+       aes(x=Week, y=Values, group=Year)) +
+  # geom_point(aes(color=Year)) +
+  geom_smooth(aes(color=Year, fill = Year)) +
+  labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
+  tbw + #ylim(0, 100) + xlim(36, 49) +
+  fw +
+  geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
 
 
 # Define UI
 ui <- pageWithSidebar(
         headerPanel('Phenology'),
         sidebarPanel(width = 4,
-             selectInput('SPECIES', 'Choose a species:',paste(unique(ColorFallLong$SPECIES)))),
-             # selectInput("Measurement", "Variable:", 
+             selectInput('SPECIES', 'Choose a species:',paste(unique(ColorFallLong$SPECIES)) %>% sort)),
+             # selectInput("Measurement", "Variable:",
              #             c("Leaf Color" = "Color",
              #               "Leaf Fall" = "Fall"))),
              mainPanel(type="tabs",
@@ -91,8 +118,9 @@ server <- function(input, output) {
                         # geom_point(aes(color=Year)) +
                         geom_smooth(aes(color=Year, fill = Year)) +
                         labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
-                        tbw + ylim(0, 100) + xlim(36, 49) +
-                        fw
+                        tbw + #ylim(0, 100) + xlim(36, 49) +
+                        fw +
+            geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
         })
         # this second plot needs some work - currently shows yearly average percent of color
         # should make it so that x = year, y = date when the individual reached 50% color/fall
@@ -103,7 +131,7 @@ server <- function(input, output) {
                         geom_jitter(aes(color=individual)) +
                         # labs(x="Week", y="Percent of Leaf Color/Fall") +
                         # facet_wrap(~ Year) +
-                        tbw + ylim(36, 49) + 
+                        tbw + #ylim(36, 49) + 
                         fw
         })
 }
