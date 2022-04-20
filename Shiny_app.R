@@ -36,7 +36,7 @@ ColorFallLong <- phen %>%
   select(SPECIES, species, individual, Year, Month, Day, Week, 
          ColorFall, Rounding, Values) %>% 
   filter(Rounding == 5 | is.na(Rounding),
-         Week %in% 36:49) 
+         Week %in% 36:49)
 
 # At what point did the values reach 50%? If they reached 50%?
 ColorFall50 <- ColorFallLong %>% 
@@ -57,6 +57,9 @@ ll <- with(Limits,
                       ColorFall = c(ColorFall, ColorFall)))
 ll$Year <- ColorFallLong$Year[1]
 ll$Week <- ColorFallLong$Week[1]
+
+# removing daylength variable from this dataframe so the first plot is only color + fall faceted
+ColorFallLong_nolength <- ColorFallLong[ColorFallLong$ColorFall != "Length", ]
 
 # Test plot outside of shiny
 # ggplot(ColorFallLong %>% filter(species == 'ACRU'),
@@ -91,7 +94,10 @@ ui <- pageWithSidebar(
                                         plotOutput("plot")),
                                tabPanel("Within-species individual yearly variation",
                                         helpText(""),
-                                        plotOutput("plot2"))
+                                        plotOutput("plot2")),
+                               tabPanel("Phenology and weather",
+                                        helpText(""),
+                                        plotOutput("plot3"))
                                )
                        )
         )
@@ -100,7 +106,7 @@ ui <- pageWithSidebar(
 # Define server
 server <- function(input, output) {
         selectedData <- reactive({
-                ColorFallLong %>% 
+                ColorFallLong_nolength %>% 
                 filter(SPECIES == input$SPECIES)#,
                        # ColorFall == input$Measurement)
         })
@@ -109,6 +115,11 @@ server <- function(input, output) {
                         filter(SPECIES == input$SPECIES)#,
                                # ColorFall == input$Measurement)
         })
+        selectedData3 <- reactive({
+                ColorFallLong %>% 
+                        filter(SPECIES == input$SPECIES)#,
+                # ColorFall == input$Measurement)
+        })
        
         output$plot <- renderPlot({
                 ggplot(selectedData(), aes(x=Week, y=Values, group=Year)) +
@@ -116,11 +127,10 @@ server <- function(input, output) {
                         geom_smooth(aes(color=Year, fill = Year)) +
                         labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
                         tbw + #ylim(0, 100) + xlim(36, 49) +
-                        fw +
-            geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
+                        fw
+            #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
         }, height=500)
-        # this second plot needs some work - currently shows yearly average percent of color
-        # should make it so that x = year, y = date when the individual reached 50% color/fall
+        
         output$plot2 <- renderPlot({
                 ggplot(selectedData2(), 
                        aes(x=Year, y=Week)) +
@@ -132,6 +142,16 @@ server <- function(input, output) {
                         tbw + #ylim(36, 49) + 
                         fw
         })
+        
+        output$plot3 <- renderPlot({
+                ggplot(selectedData3(), aes(x=Week, y=Values, group=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_smooth(aes(color=Year, fill = Year)) +
+                        labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
+                        tbw + #ylim(0, 100) + xlim(36, 49) +
+                        fw
+                #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
+        }, height=500)
 }
 
 shinyApp(ui, server)
