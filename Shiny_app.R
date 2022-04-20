@@ -16,7 +16,7 @@ WendyPath <- 'C:/Users/Wendy/OneDrive\ -\ Michigan\ State\ University/GitHub/Phe
 KaraPath <- "/Users/karachristinad/Library/CloudStorage/OneDrive-MichiganStateUniversity/CSS 844/Module 3/PhenologyData/"
 
 # Change Path to your path for the code 
-phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2021.csv"))
+phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2021.csv"))
 
 # Add daylength data
 phen %<>% 
@@ -47,6 +47,7 @@ ColorFall50 <- ColorFallLong %>%
 # ggplot settings ####
 tbw <- theme_bw(base_size = 16)
 fw <- facet_grid(ColorFall ~ ., scales = 'free_y')
+fwys <- facet_grid(ColorFall ~ .)  # Set scales as the same
 
 # Fake data for axes limits
 Limits <- tibble(ColorFall = ColorFallLong$ColorFall %>% unique %>% sort,
@@ -126,8 +127,8 @@ server <- function(input, output) {
                         # geom_point(aes(color=Year)) +
                         geom_smooth(aes(color=Year, fill = Year)) +
                         labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
-                        tbw + #ylim(0, 100) + xlim(36, 49) +
-                        fw
+                        tbw + ylim(-5, 105) + #xlim(36, 49) +
+                        fwys
             #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
         }, height=500)
         
