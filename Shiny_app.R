@@ -16,7 +16,7 @@ WendyPath <- 'C:/Users/Wendy/OneDrive\ -\ Michigan\ State\ University/GitHub/Phe
 KaraPath <- "/Users/karachristinad/Library/CloudStorage/OneDrive-MichiganStateUniversity/CSS 844/Module 3/PhenologyData/"
 
 # Change Path to your path for the code 
-phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2021.csv"))
+phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2021.csv"))
 
 # Add daylength data
 phen %<>% 
@@ -86,10 +86,10 @@ ui <- pageWithSidebar(
              #               "Leaf Fall" = "Fall"))),
              mainPanel(type="tabs",
                        tabsetPanel(
-                               tabPanel("Yearly variation - one species",
+                               tabPanel("Yearly variation for one species",
                                         helpText(""),
                                         plotOutput("plot")),
-                               tabPanel("Within species variation",
+                               tabPanel("Within-species individual yearly variation",
                                         helpText(""),
                                         plotOutput("plot2"))
                                )
@@ -118,7 +118,7 @@ server <- function(input, output) {
                         tbw + #ylim(0, 100) + xlim(36, 49) +
                         fw +
             geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
-        })
+        }, height=500)
         # this second plot needs some work - currently shows yearly average percent of color
         # should make it so that x = year, y = date when the individual reached 50% color/fall
         output$plot2 <- renderPlot({
@@ -126,6 +126,7 @@ server <- function(input, output) {
                        aes(x=Year, y=Week)) +
                         geom_boxplot() +
                         geom_jitter(aes(color=individual)) +
+                        labs(color="Individual tree ID") +
                         # labs(x="Week", y="Percent of Leaf Color/Fall") +
                         # facet_wrap(~ Year) +
                         tbw + #ylim(36, 49) + 
