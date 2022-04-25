@@ -159,6 +159,25 @@ server <- function(input, output) {
                         filter(SPECIES == input$SPECIES)#,
                 # ColorFall == input$Measurement)
         })
+        selectedData4 <- reactive({
+                ColorFallLong %>% 
+                        filter(SPECIES == input$SPECIES) %>%
+                        filter(ColorFall == "Color") #,
+                # ColorFall == input$Measurement)
+        })
+        selectedData5 <- reactive({
+                ColorFallLong %>% 
+                        filter(SPECIES == input$SPECIES) %>%
+                        filter(ColorFall == "Fall") #,
+                # ColorFall == input$Measurement)
+        })
+        # Could edit the second filter to select the weather input once that data is ready
+        selectedData6 <- reactive({
+                ColorFallLong %>% 
+                        filter(SPECIES == input$SPECIES) %>%
+                        filter(ColorFall == "Length") #,
+                # ColorFall == input$Measurement)
+        })
         
         output$plot <- renderPlot({
                 ggplot(selectedData(), aes(x=Week, y=Values, group=Year)) +
@@ -182,27 +201,52 @@ server <- function(input, output) {
                         fw
         })
         
-        third_tab <- function(var) {
-                third_plot <- subset(selectedData3(), ColorFall == var)
-                return(ggplot(third_plot, aes(x=Week, y=Values, group=Year)) +
-                               # geom_point(aes(color=Year)) +
-                               geom_smooth(aes(color=Year, fill = Year)) +
-                               labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
-                               tbw) #ylim(0, 100) + xlim(36, 49))
-        }
+        # attempted to make a function w/ variable input, but can't subset reactives
+        #third_tab <- function(var) {
+        #        third_plot <- subset(selectedData3(), ColorFall == var)
+        #        return(ggplot(third_plot, aes(x=Week, y=Values, group=Year)) +
+        #                       # geom_point(aes(color=Year)) +
+        #                       geom_smooth(aes(color=Year, fill = Year)) +
+        #                       labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
+        #                       tbw
+        #               ) #ylim(0, 100) + xlim(36, 49))
+        #}
+        #
+        #color <- renderPlot({third_tab("Color")})
+        #fall <- renderPlot({third_tab("Fall")})
+        #length <- renderPlot({third_tab("Length")}
         
-        color <- renderPlot({third_tab("Color")})
-        fall <- renderPlot({third_tab("Fall")})
-        length <- renderPlot({third_tab("Length")})
-        
-        combined_plot <- renderPlot({ggpubr::ggarrange(color, fall, length,
-                                           nrow = 3, common.legend = T)})
         output$plot3 <- renderPlot({
-                annotate_figure(combined_plot,
-                                left = text_grob("Percent of Leaf Color/Fall", color = "black", rot = 90),
-                                bottom = text_grob("Week of Year", color = "black"))})
-                
+                color <- ggplot(selectedData4(), aes(x=Week, y=Values, group=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_smooth(aes(color=Year, fill = Year)) +
+                        labs(x=NULL,y=NULL,title="Color") +
+                        tbw #ylim(0, 100) + xlim(36, 49)
+                        #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
+
+                fall <- ggplot(selectedData5(), aes(x=Week, y=Values, group=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_smooth(aes(color=Year, fill = Year)) +
+                        labs(x=NULL,y=NULL,title="Fall") +
+                        tbw #ylim(0, 100) + xlim(36, 49)
+                        #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
         
+                # edit this to make the title match the weather input 
+                length <- ggplot(selectedData6(), aes(x=Week, y=Values, group=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_smooth(aes(color=Year, fill = Year)) +
+                        labs(x=NULL,y=NULL,title="Length") +
+                        tbw #ylim(0, 100) + xlim(36, 49)
+        
+                # no common x axis yet
+                annotate_figure(ggarrange(color, fall, length,
+                                        ncol = 1, common.legend = T, legend="right"),
+                                left = text_grob("Percent of Leaf Color/Fall", color = "black", rot = 90, size=20),
+                                bottom = text_grob("Week of Year", color = "black", size=20))
+                
+                }, height=500)
+
+        # old fig 3
         #output$plot3 <- renderPlot({
         #        ggplot(selectedData3(), aes(x=Week, y=Values, group=Year)) +
         #                # geom_point(aes(color=Year)) +
