@@ -4,7 +4,12 @@ library(magrittr)
 library(tidyverse)
 # geosphere is for daylength. Can probably remove once we merge Group 3's data
 library(geosphere)
+# ggarrange
 library(ggpubr)
+# Dates
+library(chron)
+library(lubridate)
+
 
 # Standard error function
 se <- function(x, na.rm = FALSE){ 
@@ -18,11 +23,43 @@ KaraPath <- "/Users/karachristinad/Library/CloudStorage/OneDrive-MichiganStateUn
 
 # Change Path to your path for the code 
 phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2021.csv"))
+# Phenology data
+phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2021.csv"))
+# Weather data from group 3
+weather <- read.csv(
+  paste0(WendyPath, 
+         'weather_data_daymet_newvariablesApr20.csv'),
+  skip = 7)
 
-# Add daylength data
-phen %<>% 
-  mutate(DayLength = geosphere::daylength(Latitude, 
-                                          paste(Year, Month, Day, sep = '-')))
+# # Add daylength data (Removed because it's in the weather data)
+# phen %<>% 
+#   mutate(DayLength = geosphere::daylength(Latitude, 
+#                                           paste(Year, Month, Day, sep = '-')))
+
+# Add month/day to the weather data so it can join the phenology data
+# Number of days per year
+CumulativeDays <- tibble(year = 2015:2021,
+                         DaysinYear = c(365, 366, 365, 365, 365, 
+                                        366, 365),
+                         AddDays = c(0, 365, 365+366, 365*2+366, 
+                                     365*3+366, 365*4+366, 
+                                     365*4+366*2))
+weather %<>% left_join(CumulativeDays)
+# Make Julian days relative to 1/0/2015 (day 1 = 1/1/2015) 
+weather %<>% 
+  mutate(JDays = yday + AddDays)
+# Create a data frame with day, month, and year based on julian days
+MDYs <- month.day.year(jul = weather$JDays, 
+                       origin. = c(month = 1, day = 0, year = 2015))
+MDYs %<>% as.data.frame
+MDYs %<>% add_column(yday = weather$yday)
+# join dates back to data frame
+weather %<>% left_join(MDYs)
+weather %<>% 
+  rename(Month = month,
+         Day = day, 
+         Year = year)
+phen %<>% left_join(weather)
 
 # Summarize data for manipulation
 ColorFallLong <- phen %>% 
@@ -163,8 +200,8 @@ server <- function(input, output) {
         output$plot3 <- renderPlot({
                 annotate_figure(combined_plot,
                                 left = text_grob("Percent of Leaf Color/Fall", color = "black", rot = 90),
-                                bottom = text_grob("Week of Year", color = "black"))
-        }, height=500)
+                                bottom = text_grob("Week of Year", color = "black"))})
+                
         
         #output$plot3 <- renderPlot({
         #        ggplot(selectedData3(), aes(x=Week, y=Values, group=Year)) +
