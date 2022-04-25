@@ -3,7 +3,7 @@ library(shiny)
 library(magrittr)
 library(tidyverse)
 # geosphere is for daylength. Can probably remove once we merge Group 3's data
-library(geosphere)
+# library(geosphere)
 # ggarrange
 library(ggpubr)
 # Dates
@@ -32,10 +32,6 @@ weather <- read.csv(
   skip = 7)
 
 # # Add daylength data (Removed because it's in the weather data)
-# phen %<>% 
-#   mutate(DayLength = geosphere::daylength(Latitude, 
-#                                           paste(Year, Month, Day, sep = '-')))
-
 # Add month/day to the weather data so it can join the phenology data
 # Number of days per year
 CumulativeDays <- tibble(year = 2015:2021,
@@ -63,7 +59,7 @@ phen %<>% left_join(weather)
 
 # Summarize data for manipulation
 ColorFallLong <- phen %>% 
-  pivot_longer(cols = starts_with(c('Color', 'Fall', 'DayLength'), 
+  pivot_longer(cols = starts_with(c('Color', 'Fall'), 
                                   ignore.case = FALSE), 
                names_to = 'Metric',
                values_to = 'Values') %>% 
@@ -76,47 +72,89 @@ ColorFallLong <- phen %>%
   filter(Rounding == 5 | is.na(Rounding),
          Week %in% 36:49)
 
+PlotWeatherWeek <- phen %>% 
+  mutate(Year = factor(Year),
+         DayLength = ) %>% 
+  filter(Week %in% 36:49)
+PlotWeatherWeek %<>% 
+  mutate(DayHr = dayl..s. / 60 / 60) 
+WeekSum <- PlotWeatherWeek %>% 
+  group_by(Year, Week) %>% 
+  summarize(DayHr = mean(DayHr),
+            Precip_mm = mean(prcp..mm.day.),
+            MeanTemp = mean(mean_temp),
+            GDD = mean(gdd),
+            TempDiff = mean(temp_diff))
+
 # At what point did the values reach 50%? If they reached 50%?
 ColorFall50 <- ColorFallLong %>% 
   group_by(individual, Year) %>%
   filter(Values >= 50) %>% 
   filter((Values - 50) == min(Values - 50))
 
+# There are a number of pines with >50 color/fall reported
+# Take a look
+ColorFall50 %>%
+  filter(species == 'PIST') %>% 
+  select(individual, Month, Day, Week, ColorFall, Values) %>% 
+  ungroup %>% 
+  select(individual, Values, Year) %>%
+  table
+# Some are represented only a couple times. Some are multiple reports
+# 50 is a lot more common than larger numbers
+# Not sure what to do with these findings
+
+
+
 # ggplot settings ####
 tbw <- theme_bw(base_size = 16)
 fw <- facet_grid(ColorFall ~ ., scales = 'free_y')
 fwys <- facet_grid(ColorFall ~ .)  # Set scales as the same
-
-# Fake data for axes limits
-Limits <- tibble(ColorFall = ColorFallLong$ColorFall %>% unique %>% sort,
-                 ymin = c(-10, -10),
-                 ymax = c(110, 110))
-ll <- with(Limits,
-           data.frame(Values = c(ymin, ymax),
-                      ColorFall = c(ColorFall, ColorFall)))
-ll$Year <- ColorFallLong$Year[1]
-ll$Week <- ColorFallLong$Week[1]
+gs <- geom_smooth()
+gs0.9 <- geom_smooth(span = 0.9)
+ytd <- ylab('Temperature differential (max - min)')
+ydl <- ylab('Day length (hr)')
+ypr <- ylab('Precipitation (mm)')
+yt <- ylab('Temperature (Celsius)')
+ygdd <- ylab('Growing degree days')
 
 # removing daylength variable from this dataframe so the first plot is only color + fall faceted
 ColorFallLong_nolength <- ColorFallLong[ColorFallLong$ColorFall != "Length", ]
 
 # Test plot outside of shiny
-# ggplot(ColorFallLong %>% filter(species == 'ACRU'),
-#        aes(x = Week, y = Values, color = factor(Year),
-#            fill = factor(Year))) +
-#   geom_smooth() +
-#   # geom_jitter(alpha = 0.2) +
-#   tbw +
-#   facet_grid(~ ColorFall)
-ggplot(ColorFallLong %>% filter(species == 'FAGR'),
-       aes(x=Week, y=Values, group=Year)) +
-  # geom_point(aes(color=Year)) +
-  geom_smooth(aes(color=Year, fill = Year)) +
-  labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
-  tbw + #ylim(0, 100) + xlim(36, 49) +
-  fw +
-  geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
+# Daily data
+ggplot(PlotWeatherWeek, 
+       aes(x = Week, y = temp_diff, color = Year, fill = Year)) +
+  gs + tbw + ytd
+ggplot(PlotWeatherWeek, 
+       aes(x = Week, y = DayHr, color = Year, fill = Year)) +
+  gs + tbw + ydl
+ggplot(PlotWeatherWeek,
+       aes(x = Week, y = prcp..mm.day., color = Year, fill = Year)) + 
+  gs + tbw + ypr
+ggplot(PlotWeatherWeek,
+       aes(x = Week, y = mean_temp, color = Year, fill = Year)) + 
+  gs + tbw + yt
+ggplot(PlotWeatherWeek,
+       aes(x = Week, y = gdd, color = Year, fill = Year)) + 
+  gs + tbw + ygdd
 
+# Weekly means
+ggplot(WeekSum,
+       aes(x = Week, y = TempDiff, color = Year, fill = Year)) +
+  gs0.9 + tbw + ytd
+ggplot(WeekSum,
+       aes(x = Week, y = DayHr, color = Year, fill = Year)) +
+  gs + tbw + ydl
+ggplot(WeekSum,
+       aes(x = Week, y = Precip_mm, color = Year, fill = Year)) +
+  gs0.9 + tbw + ypr
+ggplot(WeekSum,
+       aes(x = Week, y = MeanTemp, color = Year, fill = Year)) +
+  gs + tbw + yt
+ggplot(WeekSum,
+       aes(x = Week, y = GDD, color = Year, fill = Year)) +
+  gs + tbw + ygdd
 
 # Define UI
 ui <- pageWithSidebar(
