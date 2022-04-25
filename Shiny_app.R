@@ -89,7 +89,9 @@ WeekSum <- PlotWeatherWeek %>%
 ColorFall50 <- ColorFallLong %>% 
   group_by(SPECIES, species, individual, Year, Week, ColorFall) %>%
   summarize(MeanValue = mean(Values)) %>% 
+  ungroup() %>%
   filter(MeanValue >= 50) %>% 
+  group_by(SPECIES, species, individual, Year, ColorFall) %>% 
   filter((MeanValue - 50) == min(MeanValue - 50))
 
 # There are a number of pines with >50 color/fall reported
@@ -100,10 +102,8 @@ ColorFall50 %>%
   ungroup %>% 
   select(individual, MeanValue, Year) %>%
   table
-# Some are represented only a couple times. Some are multiple reports
-# 50 is a lot more common than larger numbers
-# Not sure what to do with these findings
-
+# Not very many at all now that we're using the 
+# mean for each individual/week/year
 
 
 # ggplot settings ####
@@ -237,7 +237,7 @@ server <- function(input, output) {
                         geom_boxplot() +
                         geom_jitter(aes(color=individual)) +
                         labs(color="Individual tree ID") +
-                        # labs(x="Week", y="Percent of Leaf Color/Fall") +
+                        labs(y="Week when tree reaches 50% leaf change") +
                         # facet_wrap(~ Year) +
                         tbw + #ylim(36, 49) + 
                         fw
