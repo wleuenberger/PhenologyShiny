@@ -78,7 +78,7 @@ PlotWeatherWeek <- phen %>%
 PlotWeatherWeek %<>% 
   mutate(DayHr = dayl..s. / 60 / 60) 
 WeekSum <- PlotWeatherWeek %>% 
-  group_by(Year, Week) %>% 
+  group_by(Year, Week, spring_precip) %>% 
   summarize(DayHr = mean(DayHr),
             Precip_mm = mean(prcp..mm.day.),
             MeanTemp = mean(mean_temp),
@@ -116,6 +116,7 @@ ydl <- ylab('Day length (hr)')
 ypr <- ylab('Precipitation (mm)')
 yt <- ylab('Temperature (Celsius)')
 ygdd <- ylab('Growing degree days')
+ysp <- ylab('Spring precipitation (mm)')
 
 # removing daylength variable from this dataframe so the first plot is only color + fall faceted
 ColorFallLong_nolength <- ColorFallLong[ColorFallLong$ColorFall != "Length", ]
@@ -154,6 +155,9 @@ ggplot(WeekSum,
 ggplot(WeekSum,
        aes(x = Week, y = GDD, color = Year, fill = Year)) +
   gs + tbw + ygdd
+ggplot(WeekSum,
+       aes(x = Year, y = spring_precip, color = Year, fill = Year)) +
+  geom_bar(stat = 'identity') + tbw + ysp
 
 # Define UI
 ui <- pageWithSidebar(
