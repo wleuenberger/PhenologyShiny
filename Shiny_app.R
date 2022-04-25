@@ -73,8 +73,7 @@ ColorFallLong <- phen %>%
          Week %in% 36:49)
 
 PlotWeatherWeek <- phen %>% 
-  mutate(Year = factor(Year),
-         DayLength = ) %>% 
+  mutate(Year = factor(Year)) %>% 
   filter(Week %in% 36:49)
 PlotWeatherWeek %<>% 
   mutate(DayHr = dayl..s. / 60 / 60) 
