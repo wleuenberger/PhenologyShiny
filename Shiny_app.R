@@ -89,8 +89,8 @@ fwys <- facet_grid(ColorFall ~ .)  # Set scales as the same
 
 # Fake data for axes limits
 Limits <- tibble(ColorFall = ColorFallLong$ColorFall %>% unique %>% sort,
-                 ymin = c(-10, -10, 6),
-                 ymax = c(110, 110, 18))
+                 ymin = c(-10, -10),
+                 ymax = c(110, 110))
 ll <- with(Limits,
            data.frame(Values = c(ymin, ymax),
                       ColorFall = c(ColorFall, ColorFall)))
@@ -221,14 +221,14 @@ server <- function(input, output) {
                         # geom_point(aes(color=Year)) +
                         geom_smooth(aes(color=Year, fill = Year)) +
                         labs(x=NULL,y=NULL,title="Color") +
-                        tbw #ylim(0, 100) + xlim(36, 49)
+                        tbw + ylim(-5, 105) #+ xlim(36, 49)
                         #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
 
                 fall <- ggplot(selectedData5(), aes(x=Week, y=Values, group=Year)) +
                         # geom_point(aes(color=Year)) +
                         geom_smooth(aes(color=Year, fill = Year)) +
                         labs(x=NULL,y=NULL,title="Fall") +
-                        tbw #ylim(0, 100) + xlim(36, 49)
+                        tbw + ylim(-5, 105)# + xlim(36, 49)
                         #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
         
                 # edit this to make the title match the weather input 
