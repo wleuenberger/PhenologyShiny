@@ -4,6 +4,7 @@ library(magrittr)
 library(tidyverse)
 # geosphere is for daylength. Can probably remove once we merge Group 3's data
 library(geosphere)
+library(ggpubr)
 
 # Standard error function
 se <- function(x, na.rm = FALSE){ 
@@ -16,7 +17,7 @@ WendyPath <- 'C:/Users/Wendy/OneDrive\ -\ Michigan\ State\ University/GitHub/Phe
 KaraPath <- "/Users/karachristinad/Library/CloudStorage/OneDrive-MichiganStateUniversity/CSS 844/Module 3/PhenologyData/"
 
 # Change Path to your path for the code 
-phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2021.csv"))
+phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2021.csv"))
 
 # Add daylength data
 phen %<>% 
@@ -121,7 +122,7 @@ server <- function(input, output) {
                         filter(SPECIES == input$SPECIES)#,
                 # ColorFall == input$Measurement)
         })
-       
+        
         output$plot <- renderPlot({
                 ggplot(selectedData(), aes(x=Week, y=Values, group=Year)) +
                         # geom_point(aes(color=Year)) +
@@ -144,15 +145,36 @@ server <- function(input, output) {
                         fw
         })
         
+        third_tab <- function(var) {
+                third_plot <- subset(selectedData3(), ColorFall == var)
+                return(ggplot(third_plot, aes(x=Week, y=Values, group=Year)) +
+                               # geom_point(aes(color=Year)) +
+                               geom_smooth(aes(color=Year, fill = Year)) +
+                               labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
+                               tbw) #ylim(0, 100) + xlim(36, 49))
+        }
+        
+        color <- renderPlot({third_tab("Color")})
+        fall <- renderPlot({third_tab("Fall")})
+        length <- renderPlot({third_tab("Length")})
+        
+        combined_plot <- renderPlot({ggpubr::ggarrange(color, fall, length,
+                                           nrow = 3, common.legend = T)})
         output$plot3 <- renderPlot({
-                ggplot(selectedData3(), aes(x=Week, y=Values, group=Year)) +
-                        # geom_point(aes(color=Year)) +
-                        geom_smooth(aes(color=Year, fill = Year)) +
-                        labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
-                        tbw + #ylim(0, 100) + xlim(36, 49) +
-                        fw
-                #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
+                annotate_figure(combined_plot,
+                                left = text_grob("Percent of Leaf Color/Fall", color = "black", rot = 90),
+                                bottom = text_grob("Week of Year", color = "black"))
         }, height=500)
+        
+        #output$plot3 <- renderPlot({
+        #        ggplot(selectedData3(), aes(x=Week, y=Values, group=Year)) +
+        #                # geom_point(aes(color=Year)) +
+        #                geom_smooth(aes(color=Year, fill = Year)) +
+        #                labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
+        #                tbw + #ylim(0, 100) + xlim(36, 49) +
+        #                fw
+        #        #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
+        #}, height=500)
 }
 
 shinyApp(ui, server)
