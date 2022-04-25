@@ -87,17 +87,18 @@ WeekSum <- PlotWeatherWeek %>%
 
 # At what point did the values reach 50%? If they reached 50%?
 ColorFall50 <- ColorFallLong %>% 
-  group_by(individual, Year) %>%
-  filter(Values >= 50) %>% 
-  filter((Values - 50) == min(Values - 50))
+  group_by(SPECIES, species, individual, Year, Week, ColorFall) %>%
+  summarize(MeanValue = mean(Values)) %>% 
+  filter(MeanValue >= 50) %>% 
+  filter((MeanValue - 50) == min(MeanValue - 50))
 
 # There are a number of pines with >50 color/fall reported
 # Take a look
 ColorFall50 %>%
   filter(species == 'PIST') %>% 
-  select(individual, Month, Day, Week, ColorFall, Values) %>% 
+  select(individual, Week, MeanValue) %>% 
   ungroup %>% 
-  select(individual, Values, Year) %>%
+  select(individual, MeanValue, Year) %>%
   table
 # Some are represented only a couple times. Some are multiple reports
 # 50 is a lot more common than larger numbers
