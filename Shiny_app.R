@@ -27,7 +27,7 @@ phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2021.csv"))
 phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2021.csv"))
 # Weather data from group 3
 weather <- read.csv(
-  paste0(WendyPath, 
+  paste0(KaraPath, 
          'weather_data_daymet_newvariablesApr20.csv'),
   skip = 7)
 
@@ -160,11 +160,16 @@ ggplot(WeekSum,
        aes(x = Year, y = spring_precip, color = Year, fill = Year)) +
   geom_bar(stat = 'identity') + tbw + ysp
 
+# wide to long for selecting an input
+WeekSum_long <- WeekSum %>%
+        gather(key=weather_var, value=value, -Year, -Week)
+
 # Define UI
 ui <- pageWithSidebar(
         headerPanel('Phenology'),
         sidebarPanel(width = 4,
-             selectInput('SPECIES', 'Choose a species:',paste(unique(ColorFallLong$SPECIES)) %>% sort)),
+                selectInput('SPECIES', 'Choose a species:',paste(unique(ColorFallLong$SPECIES)) %>% sort),
+                selectInput('weather_var', 'Choose a weather variable (for tab 3):',paste(unique(WeekSum_long$weather_var)) %>% sort)),
              # selectInput("Measurement", "Variable:",
              #             c("Leaf Color" = "Color",
              #               "Leaf Fall" = "Fall"))),
@@ -215,9 +220,8 @@ server <- function(input, output) {
         })
         # Could edit the second filter to select the weather input once that data is ready
         selectedData6 <- reactive({
-                ColorFallLong %>% 
-                        filter(SPECIES == input$SPECIES) %>%
-                        filter(ColorFall == "Length") #,
+                WeekSum_long %>% 
+                        filter(weather_var == input$weather_var)#,
                 # ColorFall == input$Measurement)
         })
         
@@ -274,19 +278,19 @@ server <- function(input, output) {
                         #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
         
                 # edit this to make the title match the weather input 
-                length <- ggplot(selectedData6(), aes(x=Week, y=Values, group=Year)) +
+                weather <- ggplot(selectedData6(), aes(x=Week, y=value, group=Year)) +
                         # geom_point(aes(color=Year)) +
                         geom_smooth(aes(color=Year, fill = Year)) +
-                        labs(x=NULL,y=NULL,title="Length") +
+                        labs(x=NULL,y=NULL,title="Selected Weather Variable") +
                         tbw #ylim(0, 100) + xlim(36, 49)
         
                 # no common x axis yet
-                annotate_figure(ggarrange(color, fall, length,
+                annotate_figure(ggarrange(color, fall, weather,
                                         ncol = 1, common.legend = T, legend="right"),
                                 left = text_grob("Percent of Leaf Color/Fall", color = "black", rot = 90, size=20),
                                 bottom = text_grob("Week of Year", color = "black", size=20))
                 
-                }, height=500)
+                }, height=550)
 
         # old fig 3
         #output$plot3 <- renderPlot({
