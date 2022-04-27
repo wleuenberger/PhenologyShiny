@@ -160,9 +160,15 @@ ggplot(WeekSum,
        aes(x = Year, y = spring_precip, color = Year, fill = Year)) +
   geom_bar(stat = 'identity') + tbw + ysp
 
-# wide to long for selecting an input
+# wide to long for selecting an input & fixing weather var names & removing spring precip from this dataframe
 WeekSum_long <- WeekSum %>%
         gather(key=weather_var, value=value, -Year, -Week)
+WeekSum_long$weather_var[WeekSum_long$weather_var == "DayHr"] <- "Daylight length (hours)"
+WeekSum_long$weather_var[WeekSum_long$weather_var == "GDD"] <- "Growing degree days"
+WeekSum_long$weather_var[WeekSum_long$weather_var == "MeanTemp"] <- "Mean temperature (°C)"
+WeekSum_long$weather_var[WeekSum_long$weather_var == "TempDiff"] <- "Temperature differential (max temp - min temp)"
+WeekSum_long$weather_var[WeekSum_long$weather_var == "Precip_mm"] <- "Precipitation (mm)"
+WeekSum_long <- WeekSum_long[!grepl("spring_precip",WeekSum_long$weather_var),]
 
 # Define UI
 ui <- pageWithSidebar(
