@@ -168,14 +168,14 @@ WeekSum_long$weather_var[WeekSum_long$weather_var == "GDD"] <- "Growing degree d
 WeekSum_long$weather_var[WeekSum_long$weather_var == "MeanTemp"] <- "Mean temperature (°C)"
 WeekSum_long$weather_var[WeekSum_long$weather_var == "TempDiff"] <- "Temperature differential (max temp - min temp)"
 WeekSum_long$weather_var[WeekSum_long$weather_var == "Precip_mm"] <- "Precipitation (mm)"
-WeekSum_long <- WeekSum_long[!grepl("spring_precip",WeekSum_long$weather_var),]
+WeekSum_long2 <- WeekSum_long[!grepl("spring_precip",WeekSum_long$weather_var),]
 
 # Define UI
 ui <- pageWithSidebar(
         headerPanel('Phenology'),
         sidebarPanel(width = 4,
                 selectInput('SPECIES', 'Choose a species:',paste(unique(ColorFallLong$SPECIES)) %>% sort),
-                selectInput('weather_var', 'Choose a weather variable (for tab 3):',paste(unique(WeekSum_long$weather_var)) %>% sort)),
+                selectInput('weather_var', 'Choose a weather variable (for tab 3):',paste(unique(WeekSum_long2$weather_var)) %>% sort)),
              # selectInput("Measurement", "Variable:",
              #             c("Leaf Color" = "Color",
              #               "Leaf Fall" = "Fall"))),
@@ -187,9 +187,12 @@ ui <- pageWithSidebar(
                                tabPanel("Within-species individual yearly variation",
                                         helpText(""),
                                         plotOutput("plot2")),
-                               tabPanel("Phenology and weather",
+                               tabPanel("Phenology and fall weather",
                                         helpText(""),
-                                        plotOutput("plot3"))
+                                        plotOutput("plot3")),
+                               tabPanel("Phenology and spring precipitation",
+                                        helpText(""),
+                                        plotOutput("plot4"))
                                )
                        )
         )
@@ -224,10 +227,16 @@ server <- function(input, output) {
                         filter(ColorFall == "Fall") #,
                 # ColorFall == input$Measurement)
         })
-        # Could edit the second filter to select the weather input once that data is ready
+        
         selectedData6 <- reactive({
-                WeekSum_long %>% 
+                WeekSum_long2 %>% 
                         filter(weather_var == input$weather_var)#,
+                # ColorFall == input$Measurement)
+        })
+        
+        selectedData7 <- reactive({
+                WeekSum_long %>% 
+                        filter(weather_var == "spring_precip")#,
                 # ColorFall == input$Measurement)
         })
         
@@ -282,21 +291,48 @@ server <- function(input, output) {
                         labs(x=NULL,y=NULL,title="Fall") +
                         tbw + ylim(-5, 105)# + xlim(36, 49)
                         #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
-        
-                # edit this to make the title match the weather input 
+
                 weather <- ggplot(selectedData6(), aes(x=Week, y=value, group=Year)) +
                         # geom_point(aes(color=Year)) +
                         geom_smooth(aes(color=Year, fill = Year)) +
                         labs(x=NULL,y=NULL,title="Selected Weather Variable") +
                         tbw #ylim(0, 100) + xlim(36, 49)
-        
-                # no common x axis yet
+
                 annotate_figure(ggarrange(color, fall, weather,
                                         ncol = 1, common.legend = T, legend="right"),
                                 left = text_grob("Percent of Leaf Color/Fall", color = "black", rot = 90, size=20),
                                 bottom = text_grob("Week of Year", color = "black", size=20))
                 
                 }, height=550)
+        
+        
+        output$plot4 <- renderPlot({
+                color <- ggplot(selectedData4(), aes(x=Week, y=Values, group=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_smooth(aes(color=Year, fill = Year)) +
+                        labs(x=NULL,y=NULL,title="Color") +
+                        tbw + ylim(-5, 105) #+ xlim(36, 49)
+                #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
+                
+                fall <- ggplot(selectedData5(), aes(x=Week, y=Values, group=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_smooth(aes(color=Year, fill = Year)) +
+                        labs(x=NULL,y=NULL,title="Fall") +
+                        tbw + ylim(-5, 105)# + xlim(36, 49)
+                #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
+                
+                weather <- ggplot(selectedData7(), aes(x=Year, y=value, color=Year, fill=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_bar(stat="identity") +
+                        labs(x=NULL,y=NULL,title="Spring precipitation (mm)") +
+                        tbw #ylim(0, 100) + xlim(36, 49)
+
+                annotate_figure(ggarrange(color, fall, weather,
+                                          ncol = 1, common.legend = T, legend="right"),
+                                left = text_grob("Percent of Leaf Color/Fall", color = "black", rot = 90, size=20),
+                                bottom = text_grob("Week of Year", color = "black", size=20))
+                
+        }, height=550)
 
         # old fig 3
         #output$plot3 <- renderPlot({
