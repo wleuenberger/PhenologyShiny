@@ -303,7 +303,7 @@ server <- function(input, output) {
                                 left = text_grob("Percent of Leaf Color/Fall", color = "black", rot = 90, size=20),
                                 bottom = text_grob("Week of Year", color = "black", size=20))
                 
-                }, height=550)
+                }, height=700)
         
         
         output$plot4 <- renderPlot({
@@ -332,7 +332,7 @@ server <- function(input, output) {
                                 left = text_grob("Percent of Leaf Color/Fall", color = "black", rot = 90, size=20),
                                 bottom = text_grob("Week of Year", color = "black", size=20))
                 
-        }, height=550)
+        }, height=700)
 
         # old fig 3
         #output$plot3 <- renderPlot({
