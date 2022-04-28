@@ -17,8 +17,18 @@ Phenology data and shiny creation for lesson plan
 
 2021Fall_TreePhenologyData_All_wPhotoLinks.xlsx: 2021 data. This data is in a different format than the previous years
 
+[weather_data_daymet_newvariablesApr20.csv](weather_data_daymet_newvariablesApr20.csv): Weather data from Group 3.
+
+[11928_lat_42.7257_lon_-84.4777_2022-04-18_152926.csv](11928_lat_42.7257_lon_-84.4777_2022-04-18_152926.csv): Initial weather data from Group 3. "weather_data_daymet_newvariablesApr20.csv" is the updated version
+
+## Metadata
+
+[WeatherDataCollectionDocument.docx](WeatherDataCollectionDocument.docx): Metadata from Group 3 on how they collected weather data and processed to create some of the columns that we needed
+
 ## Code
 
 [DataManagement.Rmd](DataManagement.Rmd): R code to process all four data files and produce [CleanedPhenologyData2017to2021](CleanedPhenologyData2017to2021.csv). Also produces [DataManagement.md](DataManagement.md) (readable on GitHub) and [DataManagement.html](DataManagement.html) (readable in browser) that detail the data cleaning process. [DataManagement_files](DataManagement_files) is also part of this process.
 
 ## Shiny
+
+[Shiny_app.R](Shiny_app.R): Code for data management and creates the Shiny. Uses [CleanedPhenologyData2017to2021.csv](CleanedPhenologyData2017to2021.csv) and [weather_data_daymet_newvariablesApr20.csv](weather_data_daymet_newvariablesApr20.csv) as inputs
