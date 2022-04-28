@@ -32,3 +32,7 @@ Phenology data and shiny creation for lesson plan
 ## Shiny
 
 [Shiny_app.R](Shiny_app.R): Code for data management and creates the Shiny. Uses [CleanedPhenologyData2017to2021.csv](CleanedPhenologyData2017to2021.csv) and [weather_data_daymet_newvariablesApr20.csv](weather_data_daymet_newvariablesApr20.csv) as inputs
+
+## Lesson plan
+
+[Phenology_Lesson_Plan.docx](Phenology_Lesson_Plan.docx): Lesson plan that works with the Shiny app. Also accessible on the PLB 843 Forum's Google Drive: [https://docs.google.com/document/d/1xHASuwbRc__C6bLMj2aRPokvVurwpWXC9nYD0_PquIA/edit](https://docs.google.com/document/d/1xHASuwbRc__C6bLMj2aRPokvVurwpWXC9nYD0_PquIA/edit)
