@@ -19,7 +19,7 @@ Phenology data and shiny creation for lesson plan
 
 [weather_data_daymet_newvariablesApr20.csv](weather_data_daymet_newvariablesApr20.csv): Weather data from Group 3.
 
-[11928_lat_42.7257_lon_-84.4777_2022-04-18_152926.csv](11928_lat_42.7257_lon_-84.4777_2022-04-18_152926.csv): Initial weather data from Group 3. "weather_data_daymet_newvariablesApr20.csv" is the updated version
+[11928_lat_42.7257_lon_-84.4777_2022-04-18_152926.csv](11928_lat_42.7257_lon_-84.4777_2022-04-18_152926.csv): Initial weather data from Group 3. [weather_data_daymet_newvariablesApr20.csv](weather_data_daymet_newvariablesApr20.csv) is the updated version
 
 ## Metadata
 
