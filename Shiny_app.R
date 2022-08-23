@@ -175,17 +175,21 @@ WeekSum_long$weather_var[WeekSum_long$weather_var == "Precip_mm"] <- "Precipitat
 WeekSum_long2 <- WeekSum_long[!grepl("spring_precip",WeekSum_long$weather_var),]
 
 # Within year among species
-ggplot(ColorFallLong %>% filter(Year == 2017),
-       aes(x = Week, y = Values, group = species)) +
-  geom_smooth(aes(color = species, fill = species)) +
-  tbw + fwys
+ggplot(ColorFallLong %>% filter(Year == 2018),
+       aes(x = Week, y = Values, group = SPECIES)) +
+  geom_smooth(aes(color = SPECIES, fill = SPECIES)) +
+  labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
+  tbw + ylim(-5, 105) + #xlim(36, 49) +
+  fwys
 # Just oaks and maples
 ggplot(ColorFallLong %>% 
-         filter(Year == 2017, 
+         filter(Year == 2018, 
                 species %in% c('ACRU', 'ACSA', 'QUAL', 'QURU')),
-       aes(x = Week, y = Values, group = species)) +
-  geom_smooth(aes(color = species, fill = species)) +
-  tbw + fwys
+       aes(x = Week, y = Values, group = SPECIES)) +
+  geom_smooth(aes(color = SPECIES, fill = SPECIES)) +
+  labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
+  tbw + ylim(-5, 105) + #xlim(36, 49) +
+  fwys
 
 # Define UI
 ui <- pageWithSidebar(
