@@ -196,7 +196,8 @@ ui <- pageWithSidebar(
         headerPanel('Phenology'),
         sidebarPanel(width = 4,
                 selectInput('SPECIES', 'Choose a species:',paste(unique(ColorFallLong$SPECIES)) %>% sort),
-                selectInput('weather_var', 'Choose a weather variable (for tab 3):',paste(unique(WeekSum_long2$weather_var)) %>% sort)),
+                selectInput('weather_var', 'Choose a weather variable (for tab 3):',paste(unique(WeekSum_long2$weather_var)) %>% sort),
+                selectInput('Year', 'Choose a year (for tab 5):',paste(unique(ColorFallLong$Year)) %>% sort)),
              # selectInput("Measurement", "Variable:",
              #             c("Leaf Color" = "Color",
              #               "Leaf Fall" = "Fall"))),
@@ -213,7 +214,10 @@ ui <- pageWithSidebar(
                                         plotOutput("plot3")),
                                tabPanel("Phenology and spring precipitation",
                                         helpText(""),
-                                        plotOutput("plot4"))
+                                        plotOutput("plot4")),
+                               tabPanel("Variation between species by year",
+                                        helpText(""),
+                                        plotOutput("plot5"))
                                )
                        )
         )
@@ -259,6 +263,11 @@ server <- function(input, output) {
                 WeekSum_long %>% 
                         filter(weather_var == "spring_precip")#,
                 # ColorFall == input$Measurement)
+        })
+        
+        selectedData8 <- reactive({
+                ColorFallLong %>% 
+                        filter(Year == input$Year)
         })
         
         output$plot <- renderPlot({
@@ -354,6 +363,18 @@ server <- function(input, output) {
                                 bottom = text_grob("Week of Year", color = "black", size=20))
                 
         }, height=700)
+        
+        output$plot5 <- renderPlot({
+                ggplot(selectedData8(),
+                       #selectedData8() %>% 
+                       #        filter(species %in% c('ACRU', 'ACSA', 'QUAL', 'QURU')),
+                       aes(x=Week, y=Values, group=SPECIES)) +
+                        geom_smooth(aes(color=SPECIES, fill = SPECIES)) +
+                        labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
+                        tbw + ylim(-5, 105) +
+                        fwys
+        }, height=500)
+        
 
         # old fig 3
         #output$plot3 <- renderPlot({
