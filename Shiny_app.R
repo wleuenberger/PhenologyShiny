@@ -19,15 +19,18 @@ se <- function(x, na.rm = FALSE){
 # Get data
 # Paths to our individual computers
 WendyPath <- 'C:/Users/Wendy/OneDrive\ -\ Michigan\ State\ University/GitHub/PhenologyShiny/'
+WendyPathMSU <- 'C:/Users/leuenbe9/OneDrive\ -\ Michigan\ State\ University/GitHub/PhenologyShiny/'
 KaraPath <- "/Users/karachristinad/Library/CloudStorage/OneDrive-MichiganStateUniversity/CSS 844/Module 3/PhenologyData/"
 
 # Change Path to your path for the code 
 phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2021.csv"))
 # Phenology data
-phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2021.csv"))
+# phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2021.csv"))
+# phen<-read.csv(paste0(WendyPathMSU, "CleanedPhenologyData2017to2021.csv"))
 # Weather data from group 3
 weather <- read.csv(
   paste0(KaraPath, 
+         #WendyPathMSU,
          'weather_data_daymet_newvariablesApr20.csv'),
   skip = 7)
 
@@ -106,6 +109,7 @@ ColorFall50 %>%
 # mean for each individual/week/year
 
 
+
 # ggplot settings ####
 tbw <- theme_bw(base_size = 16)
 fw <- facet_grid(ColorFall ~ ., scales = 'free_y')
@@ -169,6 +173,19 @@ WeekSum_long$weather_var[WeekSum_long$weather_var == "MeanTemp"] <- "Mean temper
 WeekSum_long$weather_var[WeekSum_long$weather_var == "TempDiff"] <- "Temperature differential (max temp - min temp)"
 WeekSum_long$weather_var[WeekSum_long$weather_var == "Precip_mm"] <- "Precipitation (mm)"
 WeekSum_long2 <- WeekSum_long[!grepl("spring_precip",WeekSum_long$weather_var),]
+
+# Within year among species
+ggplot(ColorFallLong %>% filter(Year == 2017),
+       aes(x = Week, y = Values, group = species)) +
+  geom_smooth(aes(color = species, fill = species)) +
+  tbw + fwys
+# Just oaks and maples
+ggplot(ColorFallLong %>% 
+         filter(Year == 2017, 
+                species %in% c('ACRU', 'ACSA', 'QUAL', 'QURU')),
+       aes(x = Week, y = Values, group = species)) +
+  geom_smooth(aes(color = species, fill = species)) +
+  tbw + fwys
 
 # Define UI
 ui <- pageWithSidebar(
