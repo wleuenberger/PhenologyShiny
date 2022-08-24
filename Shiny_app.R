@@ -209,6 +209,223 @@ ColorFall50 %>%
   rename('Abbreviation' = 'species',
          'ScientificName' = 'SPECIES')
 
+# To have unique dropdowns per tab, the inputs need to be unique columns for each tab
+# Duplicating the needed columns so that the dropdowns work for each tab
+ColorFallLong$SPECIES2 <- ColorFallLong$SPECIES
+ColorFallLong$SPECIES3 <- ColorFallLong$SPECIES
+ColorFallLong$SPECIES4 <- ColorFallLong$SPECIES
+ColorFallLong$Year2 <- ColorFallLong$Year
+
+
+# Define UI
+ui <- pageWithSidebar(
+        headerPanel('Phenology'),
+        sidebarPanel(width = 4,
+                     conditionalPanel(condition = 'input.tabselected==1',
+                                      selectInput('SPECIES', 'Choose a species:',paste(unique(ColorFallLong$SPECIES)) %>% sort)),
+                     conditionalPanel(condition = 'input.tabselected==2',
+                                      selectInput('SPECIES2', 'Choose a species:',paste(unique(ColorFallLong$SPECIES2)) %>% sort)),
+                     conditionalPanel(condition = 'input.tabselected==3',
+                                      selectInput('SPECIES3', 'Choose a species:',paste(unique(ColorFallLong$SPECIES3)) %>% sort),
+                                      selectInput('weather_var', 'Choose a weather variable:',paste(unique(WeekSum_long2$weather_var)) %>% sort)),
+                     conditionalPanel(condition = 'input.tabselected==4',
+                                      selectInput('SPECIES4', 'Choose a species:',paste(unique(ColorFallLong$SPECIES4)) %>% sort)),
+                     conditionalPanel(condition = 'input.tabselected==5',
+                                      selectInput('Year', 'Choose a year:',paste(unique(ColorFallLong$Year)) %>% sort)),
+                     conditionalPanel(condition = 'input.tabselected==6',
+                                      selectInput('Year2', 'Choose a year:',paste(unique(ColorFallLong$Year2)) %>% sort))),
+        mainPanel(type="tabs",
+                  tabsetPanel(
+                          tabPanel("Yearly variation for one species",
+                                   value = 1,
+                                   helpText(""),
+                                   plotOutput("plot")),
+                          tabPanel("Within-species individual yearly variation",
+                                   value = 2,
+                                   helpText(""),
+                                   plotOutput("plot2")),
+                          tabPanel("Phenology and fall weather",
+                                   value = 3,
+                                   helpText(""),
+                                   plotOutput("plot3")),
+                          tabPanel("Phenology and spring precipitation",
+                                   value = 4,
+                                   helpText(""),
+                                   plotOutput("plot4")),
+                          tabPanel("Variation between species by year",
+                                   value = 5,
+                                   helpText(""),
+                                   plotOutput("plot5")),
+                          tabPanel("Variation between maples and oaks by year",
+                                   value = 6,
+                                   helpText(""),
+                                   plotOutput("plot6")),
+                          id = "tabselected"
+                  )
+        )
+)
+
+
+# Define server
+server <- function(input, output) {
+        selectedData <- reactive({
+                ColorFallLong_nolength %>% 
+                        filter(SPECIES == input$SPECIES)
+        })
+        selectedData2 <- reactive({
+                ColorFall50 %>% 
+                        filter(SPECIES == input$SPECIES2)
+        })
+        selectedData3 <- reactive({
+                ColorFallLong %>% 
+                        filter(SPECIES == input$SPECIES3)
+        })
+        selectedData4 <- reactive({
+                ColorFallLong %>% 
+                        filter(SPECIES == input$SPECIES3) %>%
+                        filter(ColorFall == "Color")
+        })
+        selectedData5 <- reactive({
+                ColorFallLong %>% 
+                        filter(SPECIES == input$SPECIES3) %>%
+                        filter(ColorFall == "Fall")
+        })
+        
+        selectedData6 <- reactive({
+                WeekSum_long2 %>% 
+                        filter(weather_var == input$weather_var)
+        })
+        
+        selectedData7 <- reactive({
+                ColorFallLong %>% 
+                        filter(SPECIES == input$SPECIES4) %>%
+                        filter(ColorFall == "Color")
+        })
+        selectedData8 <- reactive({
+                ColorFallLong %>% 
+                        filter(SPECIES == input$SPECIES4) %>%
+                        filter(ColorFall == "Fall")
+        })
+        
+        selectedData9 <- reactive({
+                WeekSum_long %>% 
+                        filter(weather_var == "spring_precip")
+        })
+        
+        selectedData10 <- reactive({
+                ColorFallLong %>% 
+                        filter(Year == input$Year)
+        })
+        
+        selectedData11 <- reactive({
+                ColorFallLong %>% 
+                        filter(Year == input$Year2)
+        })
+        
+        output$plot <- renderPlot({
+                ggplot(selectedData(), aes(x=Week, y=Values, group=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_smooth(aes(color=Year, fill = Year)) +
+                        labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
+                        tbw + ylim(-5, 105) + #xlim(36, 49) +
+                        fwys
+                #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
+        }, height=500)
+        
+        output$plot2 <- renderPlot({
+                ggplot(selectedData2(), 
+                       aes(x=Year, y=Week)) +
+                        geom_boxplot() +
+                        geom_jitter(aes(color=individual)) +
+                        labs(color="Individual tree ID") +
+                        labs(y="Week when tree reaches 50% leaf change") +
+                        # facet_wrap(~ Year) +
+                        tbw + #ylim(36, 49) + 
+                        fw
+        })
+        
+        output$plot3 <- renderPlot({
+                color <- ggplot(selectedData4(), aes(x=Week, y=Values, group=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_smooth(aes(color=Year, fill = Year)) +
+                        labs(x=NULL,y=NULL,title="Color") +
+                        tbw + ylim(-5, 105) #+ xlim(36, 49)
+                #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
+                
+                fall <- ggplot(selectedData5(), aes(x=Week, y=Values, group=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_smooth(aes(color=Year, fill = Year)) +
+                        labs(x=NULL,y=NULL,title="Fall") +
+                        tbw + ylim(-5, 105)# + xlim(36, 49)
+                #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
+                
+                weather <- ggplot(selectedData6(), aes(x=Week, y=value, group=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_smooth(aes(color=Year, fill = Year)) +
+                        labs(x=NULL,y=NULL,title="Selected Weather Variable") +
+                        tbw #ylim(0, 100) + xlim(36, 49)
+                
+                annotate_figure(ggarrange(color, fall, weather,
+                                          ncol = 1, common.legend = T, legend="right"),
+                                left = text_grob("Percent of Leaf Color/Fall", color = "black", rot = 90, size=20),
+                                bottom = text_grob("Week of Year", color = "black", size=20))
+                
+        }, height=700)
+        
+        
+        output$plot4 <- renderPlot({
+                color <- ggplot(selectedData7(), aes(x=Week, y=Values, group=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_smooth(aes(color=Year, fill = Year)) +
+                        labs(x=NULL,y=NULL,title="Color") +
+                        tbw + ylim(-5, 105) #+ xlim(36, 49)
+                #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
+                
+                fall <- ggplot(selectedData8(), aes(x=Week, y=Values, group=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_smooth(aes(color=Year, fill = Year)) +
+                        labs(x=NULL,y=NULL,title="Fall") +
+                        tbw + ylim(-5, 105)# + xlim(36, 49)
+                #geom_point(data = ll, aes(x = Week, y = Values), alpha = 0)
+                
+                weather <- ggplot(selectedData9(), aes(x=Year, y=value, color=Year, fill=Year)) +
+                        # geom_point(aes(color=Year)) +
+                        geom_bar(stat="identity") +
+                        labs(x=NULL,y=NULL,title="Spring precipitation (mm)") +
+                        tbw #ylim(0, 100) + xlim(36, 49)
+                
+                annotate_figure(ggarrange(color, fall, weather,
+                                          ncol = 1, common.legend = T, legend="right"),
+                                left = text_grob("Percent of Leaf Color/Fall", color = "black", rot = 90, size=20),
+                                bottom = text_grob("Week of Year", color = "black", size=20))
+                
+        }, height=700)
+        
+        output$plot5 <- renderPlot({
+                ggplot(selectedData10(),
+                       aes(x=Week, y=Values, group=SPECIES)) +
+                        geom_smooth(aes(color=SPECIES, fill = SPECIES)) +
+                        labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
+                        tbw + ylim(-5, 105) +
+                        fwys
+        }, height=500)
+        
+        output$plot6 <- renderPlot({
+                ggplot(selectedData11() %>% 
+                               filter(species %in% c('ACRU', 'ACSA', 'QUAL', 'QURU')),
+                       aes(x=Week, y=Values, group=SPECIES)) +
+                        geom_smooth(aes(color=SPECIES, fill = SPECIES)) +
+                        labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
+                        tbw + ylim(-5, 105) +
+                        fwys
+        }, height=500)
+}
+
+shinyApp(ui, server)
+
+
+
+# Old version
 # Define UI
 ui <- pageWithSidebar(
         headerPanel('Phenology'),
