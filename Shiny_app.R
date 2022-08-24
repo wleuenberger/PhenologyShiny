@@ -126,43 +126,43 @@ ysp <- ylab('Spring precipitation (mm)')
 # removing daylength variable from this dataframe so the first plot is only color + fall faceted
 ColorFallLong_nolength <- ColorFallLong[ColorFallLong$ColorFall != "Length", ]
 
-# Test plot outside of shiny
-# Daily data
-ggplot(PlotWeatherWeek, 
-       aes(x = Week, y = temp_diff, color = Year, fill = Year)) +
-  gs + tbw + ytd
-ggplot(PlotWeatherWeek, 
-       aes(x = Week, y = DayHr, color = Year, fill = Year)) +
-  gs + tbw + ydl
-ggplot(PlotWeatherWeek,
-       aes(x = Week, y = prcp..mm.day., color = Year, fill = Year)) + 
-  gs + tbw + ypr
-ggplot(PlotWeatherWeek,
-       aes(x = Week, y = mean_temp, color = Year, fill = Year)) + 
-  gs + tbw + yt
-ggplot(PlotWeatherWeek,
-       aes(x = Week, y = gdd, color = Year, fill = Year)) + 
-  gs + tbw + ygdd
-
-# Weekly means
-ggplot(WeekSum,
-       aes(x = Week, y = TempDiff, color = Year, fill = Year)) +
-  gs0.9 + tbw + ytd
-ggplot(WeekSum,
-       aes(x = Week, y = DayHr, color = Year, fill = Year)) +
-  gs + tbw + ydl
-ggplot(WeekSum,
-       aes(x = Week, y = Precip_mm, color = Year, fill = Year)) +
-  gs0.9 + tbw + ypr
-ggplot(WeekSum,
-       aes(x = Week, y = MeanTemp, color = Year, fill = Year)) +
-  gs + tbw + yt
-ggplot(WeekSum,
-       aes(x = Week, y = GDD, color = Year, fill = Year)) +
-  gs + tbw + ygdd
-ggplot(WeekSum,
-       aes(x = Year, y = spring_precip, color = Year, fill = Year)) +
-  geom_bar(stat = 'identity') + tbw + ysp
+# # Test plot outside of shiny
+# # Daily data
+# ggplot(PlotWeatherWeek, 
+#        aes(x = Week, y = temp_diff, color = Year, fill = Year)) +
+#   gs + tbw + ytd
+# ggplot(PlotWeatherWeek, 
+#        aes(x = Week, y = DayHr, color = Year, fill = Year)) +
+#   gs + tbw + ydl
+# ggplot(PlotWeatherWeek,
+#        aes(x = Week, y = prcp..mm.day., color = Year, fill = Year)) + 
+#   gs + tbw + ypr
+# ggplot(PlotWeatherWeek,
+#        aes(x = Week, y = mean_temp, color = Year, fill = Year)) + 
+#   gs + tbw + yt
+# ggplot(PlotWeatherWeek,
+#        aes(x = Week, y = gdd, color = Year, fill = Year)) + 
+#   gs + tbw + ygdd
+# 
+# # Weekly means
+# ggplot(WeekSum,
+#        aes(x = Week, y = TempDiff, color = Year, fill = Year)) +
+#   gs0.9 + tbw + ytd
+# ggplot(WeekSum,
+#        aes(x = Week, y = DayHr, color = Year, fill = Year)) +
+#   gs + tbw + ydl
+# ggplot(WeekSum,
+#        aes(x = Week, y = Precip_mm, color = Year, fill = Year)) +
+#   gs0.9 + tbw + ypr
+# ggplot(WeekSum,
+#        aes(x = Week, y = MeanTemp, color = Year, fill = Year)) +
+#   gs + tbw + yt
+# ggplot(WeekSum,
+#        aes(x = Week, y = GDD, color = Year, fill = Year)) +
+#   gs + tbw + ygdd
+# ggplot(WeekSum,
+#        aes(x = Year, y = spring_precip, color = Year, fill = Year)) +
+#   geom_bar(stat = 'identity') + tbw + ysp
 
 # wide to long for selecting an input & fixing weather var names & removing spring precip from this dataframe
 WeekSum_long <- WeekSum %>%
@@ -175,21 +175,39 @@ WeekSum_long$weather_var[WeekSum_long$weather_var == "Precip_mm"] <- "Precipitat
 WeekSum_long2 <- WeekSum_long[!grepl("spring_precip",WeekSum_long$weather_var),]
 
 # Within year among species
-ggplot(ColorFallLong %>% filter(Year == 2018),
-       aes(x = Week, y = Values, group = SPECIES)) +
-  geom_smooth(aes(color = SPECIES, fill = SPECIES)) +
-  labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
-  tbw + ylim(-5, 105) + #xlim(36, 49) +
-  fwys
-# Just oaks and maples
-ggplot(ColorFallLong %>% 
-         filter(Year == 2018, 
-                species %in% c('ACRU', 'ACSA', 'QUAL', 'QURU')),
-       aes(x = Week, y = Values, group = SPECIES)) +
-  geom_smooth(aes(color = SPECIES, fill = SPECIES)) +
-  labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
-  tbw + ylim(-5, 105) + #xlim(36, 49) +
-  fwys
+# ggplot(ColorFallLong %>% filter(Year == 2018),
+#        aes(x = Week, y = Values, group = SPECIES)) +
+#   geom_smooth(aes(color = SPECIES, fill = SPECIES)) +
+#   labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
+#   tbw + ylim(-5, 105) + #xlim(36, 49) +
+#   fwys
+# # Just oaks and maples
+# ggplot(ColorFallLong %>% 
+#          filter(Year == 2018, 
+#                 species %in% c('ACRU', 'ACSA', 'QUAL', 'QURU')),
+#        aes(x = Week, y = Values, group = SPECIES)) +
+#   geom_smooth(aes(color = SPECIES, fill = SPECIES)) +
+#   labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
+#   tbw + ylim(-5, 105) + #xlim(36, 49) +
+#   fwys
+
+# Box plots for within year among species
+ggplot(ColorFall50 %>% filter(Year == 2021),
+       aes(x = species, y = MeanValue, group = SPECIES)) +
+  geom_boxplot() +
+  geom_jitter() +
+  labs(y="Week when tree reaches 50% leaf change", x = 'Species') +
+  # facet_wrap(~ Year) +
+  tbw + #ylim(36, 49) + 
+  fw 
+  
+# Table with scientific names and abbreviations
+ColorFall50 %>% 
+  ungroup %>% 
+  select(species, SPECIES) %>% 
+  distinct %>% 
+  rename('Abbreviation' = 'species',
+         'ScientificName' = 'SPECIES')
 
 # Define UI
 ui <- pageWithSidebar(
