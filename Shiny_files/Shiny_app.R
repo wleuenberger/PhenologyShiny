@@ -9,7 +9,7 @@ library(ggpubr)
 # Dates
 library(chron)
 library(lubridate)
-
+library(rsconnect)
 
 # Standard error function
 se <- function(x, na.rm = FALSE){ 
@@ -23,16 +23,18 @@ WendyPathMSU <- 'C:/Users/leuenbe9/OneDrive\ -\ Michigan\ State\ University/GitH
 KaraPath <- "/Users/karachristinad/Library/CloudStorage/OneDrive-MichiganStateUniversity/CSS 844/Module 3/PhenologyData/"
 
 # Change Path to your path for the code 
-phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2021.csv"))
+#phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2021.csv"))
+phen<-read.csv("CleanedPhenologyData2017to2021.csv")
 # Phenology data
 # phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2021.csv"))
 # phen<-read.csv(paste0(WendyPathMSU, "CleanedPhenologyData2017to2021.csv"))
 # Weather data from group 3
-weather <- read.csv(
-  paste0(KaraPath, 
-         #WendyPathMSU,
-         'weather_data_daymet_newvariablesApr20.csv'),
-  skip = 7)
+#weather <- read.csv(
+#  paste0(KaraPath, 
+#         #WendyPathMSU,
+#         'weather_data_daymet_newvariablesApr20.csv'),
+#  skip = 7)
+weather<-read.csv('weather_data_daymet_newvariablesApr20.csv',skip = 7)
 
 # # Add daylength data (Removed because it's in the weather data)
 # Add month/day to the weather data so it can join the phenology data
