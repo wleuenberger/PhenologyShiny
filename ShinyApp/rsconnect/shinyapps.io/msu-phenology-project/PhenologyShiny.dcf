@@ -1,0 +1,13 @@
+name: PhenologyShiny
+title: PhenologyShiny
+username:
+account: msu-phenology-project
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7440983
+bundleId: 6447599
+url: https://msu-phenology-project.shinyapps.io/PhenologyShiny/
+when: 1666886214.69967
+lastSyncTime: 1666886214.69969
+asMultiple: FALSE
+asStatic: FALSE
