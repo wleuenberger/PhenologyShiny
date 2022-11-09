@@ -195,7 +195,7 @@ WeekSum_long2 <- WeekSum_long[!grepl("spring_precip",WeekSum_long$weather_var),]
 
 # Box plots for within year among species
 ggplot(ColorFall50 %>% filter(Year == 2021),
-       aes(x = species, y = MeanValue, group = SPECIES)) +
+       aes(x = species, y = Week, group = SPECIES)) +
         geom_boxplot() +
         geom_jitter() +
         labs(y="Week when tree reaches 50% leaf change", x = 'Species') +
@@ -441,7 +441,7 @@ server <- function(input, output) {
         
         output$plot7 <- renderPlot({
                 ggplot(selectedData12(),
-                       aes(x = species, y = MeanValue, group = SPECIES)) +
+                       aes(x = species, y = Week, group = SPECIES)) +
                         geom_boxplot() +
                         geom_jitter() +
                         labs(y="Week when tree reaches 50% leaf change", x = 'Species') +

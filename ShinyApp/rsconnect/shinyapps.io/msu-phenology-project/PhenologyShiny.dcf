@@ -5,9 +5,9 @@ account: msu-phenology-project
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 7440983
-bundleId: 6447599
+bundleId: 6493755
 url: https://msu-phenology-project.shinyapps.io/PhenologyShiny/
-when: 1666886214.69967
-lastSyncTime: 1666886214.69969
+when: 1668001711.04519
+lastSyncTime: 1668001711.04524
 asMultiple: FALSE
 asStatic: FALSE
