@@ -8,6 +8,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+rm(list=ls()) #remove all previous variables
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -23,7 +24,6 @@ tbw = theme_bw(base_size = 18)
 th = theme(panel.grid = element_blank())
 ```
 
-
 ## Read in data
 
 Note: This R file should be located in the same working directory as the data. Otherwise reading data from other places in the google drive is challenging and I couldn't get it to work. Might be tricky since the drive is "shared with me" not a shared drive or my drive.
@@ -36,6 +36,12 @@ Data2019 <- read_csv(
   'Form_BS162_2019_2019_12_19_14_57_47_271712.csv')
 Data2021 <- read_xlsx(
   '2021Fall_TreePhenologyData_All_wPhotoLinks.xlsx')
+Data2022 <- read_xlsx('TreePhenologyData2022Shiny.xlsx')
+# remove empty rows
+Data2022 <- na.omit(Data2022)
+# remove whitespace from SPECIES
+Data2022$SPECIES <- trimws(Data2022$SPECIES, which = "right")
+
 ```
 
 ## Merge data
@@ -48,18 +54,21 @@ Data171819 <- Data2017 %>%
   bind_rows(Data2019)
 ```
 
-### Species columns 
+### Species columns
 
 ```{r, message = FALSE}
 # Remove \n from the SPECIES column
 Data2021 %<>% 
   mutate(SPECIES = str_remove(SPECIES, '\n'))
+Data2022 %<>%
+  mutate(SPECIES = str_remove(SPECIES, '\n'))
 
-# Take a look at the two species columns
+# Take a look at the three species columns
 Data2021$SPECIES %>% table
+Data2022$SPECIES %>% table
 Data171819$species %>% table
 
-# Create dataframe with both styles of species names
+# Create dataframe with both styles of species names, 2022 species names are identical to 2021
 SpeciesLookUp <- tibble(
   SPECIES = unique(Data2021$SPECIES) %>% sort,
   species = c(unique(Data171819$species), 'OSVI') %>% sort)
@@ -68,6 +77,8 @@ SpeciesLookUp <- tibble(
 Data171819 %<>% 
   left_join(SpeciesLookUp)
 Data2021 %<>% 
+  left_join(SpeciesLookUp)
+Data2022 %<>%
   left_join(SpeciesLookUp)
 
 ```
@@ -84,6 +95,7 @@ Data2021$`LEAF COLOR` %>% table
 # Note: bars barely show up due to 0.01 width
 # ggplot(Data2021, aes(x = `LEAF COLOR`)) +
 #   geom_bar() + tbw + th
+Data2022$`LEAF COLOR` %>% table
 ```
 
 ### Leaf fall columns
@@ -93,6 +105,7 @@ I'm not sure how students found that a negative percent of leaves were falling. 
 ```{r}
 Data171819$fall %>% table
 Data2021$`LEAF FALL` %>% table
+Data2022$`LEAF FALL` %>% table
 ```
 
 ### Accession number columns
@@ -100,33 +113,79 @@ Data2021$`LEAF FALL` %>% table
 140 trees are in both datasets. 36 trees are only in one dataset.
 
 ```{r}
-# Most individual/ACCESSION values are in both dataframes
+# Most individual/ACCESSION values are in ALL dataframes
+# Note: Should later compare all 3 dataframes together
+# F:13 T:140
 unique(Data171819$individual) %in% 
   unique(Data2021$ACCESSION) %>%
   table
-
+# F:23 T:140
 unique(Data2021$ACCESSION) %in% 
   unique(Data171819$individual) %>%
   table
+# F:19 T:134
+unique(Data171819$individual) %in%
+  unique(Data2022$ACCESSION) %>%
+  table
+# F:34 T:134
+unique(Data2022$ACCESSION) %in%
+  unique(Data171819$individual) %>%
+  table
+# F:7 T:156
+unique(Data2021$ACCESSION) %in%
+  unique(Data2022$ACCESSION) %>%
+  table
+# F:12 T:156
+unique(Data2022$ACCESSION) %in%
+  unique(Data2021$ACCESSION) %>%
+  table
 
-# Look at the values that are NOT in both data frames
+"
+The below will be edited to output the intersection and what does not intersect
+between the 3dfs. This code is a placeholder.
+varname <- function(a, b, c){
+  df1[,a]; df2[,a]=a[2]; df3[,z]=a[3]
+  intersection 
+  !intersection
+  
+}  
+t <- list(c(), c(), c())
+  lapply(FUN = ,varname)
+"
+
+# Look at the values that are NOT in dataframes
+# 171819
 unique(Data171819$individual)[!unique(Data171819$individual) %in% 
   unique(Data2021$ACCESSION)]
 
+unique(Data171819$individual)[!unique(Data171819$individual) %in% 
+  unique(Data2022$ACCESSION)]
+
+# 2021
 unique(Data2021$ACCESSION)[!unique(Data2021$ACCESSION) %in% 
   unique(Data171819$individual)]
+
+unique(Data2021$ACCESSION)[!unique(Data2021$ACCESSION) %in% 
+  unique(Data2022$ACCESSION)]
+
+# 2022
+unique(Data2022$ACCESSION)[!unique(Data2021$ACCESSION) %in% 
+  unique(Data171819$individual)]
+
+unique(Data2022$ACCESSION)[!unique(Data2022$ACCESSION) %in% 
+  unique(Data2021$ACCESSION)]
+
 ```
 
 ### Photo links
 
 ```{r}
+# no photo addresses provided for 2022
 Data171819$photo %>% head
 Data2021$`PICTURE ADDRESS` %>% head
 
 
 ```
-
-
 
 ### Rename columns as needed
 
@@ -140,6 +199,11 @@ Data2021 %<>%
          fall = `LEAF FALL`,
          individual = ACCESSION,
          photo = `PICTURE ADDRESS`)
+
+Data2022 %<>%
+  rename(color = `LEAF COLOR`,
+         fall = `LEAF FALL`,
+         individual = ACCESSION)
 ```
 
 ### Add lat, long, altitude to 2021 data
@@ -147,6 +211,7 @@ Data2021 %<>%
 Tried to do this, but it resulted in almost 500,000 rows of data due to rows of data with multiple lat/long/alt datasets. The problem is not just the altitude data, as removing that column doesn't help much.
 
 ```{r, message = FALSE}
+
 Data2021 %>% 
   left_join(Data171819[,c('individual', '_tree_gps_latitude',
                          '_tree_gps_longitude', 
@@ -156,8 +221,8 @@ Data2021 %>%
   left_join(Data171819[,c('individual', '_tree_gps_latitude',
                          '_tree_gps_longitude')]) %>% dim
 
-```
 
+```
 
 ### Merge select columns
 
@@ -176,6 +241,15 @@ AllData <- Data171819[,c('SPECIES', 'species', 'individual',
                         # '_tree_gps_longitude',
                         # '_tree_gps_altitude',
                         'photo')])
+AllData <- AllData[,c('SPECIES', 'species', 'individual',
+                         'color', 'fall', 'DATE',
+                         "_tree_gps_latitude",
+                         '_tree_gps_longitude',
+                         '_tree_gps_altitude',
+                         'group_num', 'student_id',
+                         'photo')]%>%
+  bind_rows(Data2022[,c('SPECIES', 'species', 'individual',
+                        'color', 'fall', 'DATE')])
 
 # Rename lat/long/altitude for ease
 AllData %<>% rename(Latitude = '_tree_gps_latitude',
@@ -183,7 +257,6 @@ AllData %<>% rename(Latitude = '_tree_gps_latitude',
                     Altitude = '_tree_gps_altitude')
 
 ```
-
 
 ## Remove questionable data
 
@@ -271,14 +344,12 @@ AllData %<>%
                                sep = "_"))
 ```
 
-
 ## Export cleaned data
 
 ```{r}
 # Commented out since it's already run.
 # Uncomment if needed to re-export.
-# write.csv(AllData, file = 'CleanedPhenologyData2017to2021.csv',
+# write.csv(AllData, file = 'CleanedPhenologyData2017to2022.csv',
 #           row.names = FALSE)
 
 ```
-
