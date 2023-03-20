@@ -25,6 +25,7 @@ KaraPath <- "/Users/karachristinad/Library/CloudStorage/OneDrive-MichiganStateUn
 # Change Path to your path for the code 
 #phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2022.csv"))
 # phen<-read.csv("/Users/briannabrown/PhenologyShiny/ShinyApp/CleanedPhenologyData2017to2022.csv")
+phen<-read.csv("CleanedPhenologyData2017to2022.csv")
 # Phenology data
 # phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2022.csv"))
 # phen<-read.csv(paste0(WendyPathMSU, "CleanedPhenologyData2017to2022.csv"))
@@ -34,17 +35,17 @@ KaraPath <- "/Users/karachristinad/Library/CloudStorage/OneDrive-MichiganStateUn
 #         #WendyPathMSU,
 #         'weather_data_daymet_newvariables_March2023.csv'),
 #  skip = 7)
-weather<-read.csv('weather_data_daymet_newvariables_updateMarch2023.csv',skip = 7)
+weather<-read.csv('weather_data_daymet_newvariables_updateMar2023.csv',skip = 7)
 
 # # Add daylength data (Removed because it's in the weather data)
 # Add month/day to the weather data so it can join the phenology data
 # Number of days per year
 CumulativeDays <- tibble(year = 2015:2022,
                          DaysinYear = c(365, 366, 365, 365, 365, 
-                                        366, 365),
+                                        366, 365, 365),
                          AddDays = c(0, 365, 365+366, 365*2+366, 
                                      365*3+366, 365*4+366, 
-                                     365*4+366*2))
+                                     365*4+366*2, 365*5+366*2))
 weather %<>% left_join(CumulativeDays)
 # Make Julian days relative to 1/0/2015 (day 1 = 1/1/2015) 
 weather %<>% 
@@ -61,6 +62,18 @@ weather %<>%
                Day = day, 
                Year = year)
 phen %<>% left_join(weather)
+
+# fixing species codes
+phen$species[phen$SPECIES == "Acer rubrum"] <- "ACRU"
+phen$species[phen$SPECIES == "Acer saccharum"] <- "ACSA"
+phen$species[phen$SPECIES == "Cornus florida"] <- "COFL"
+phen$species[phen$SPECIES == "Metasequoia glyptostroboides"] <- "MEGL"
+phen$species[phen$SPECIES == "Ostrya virginiana"] <- "OSVI"
+phen$species[phen$SPECIES == "Pinus strobus"] <- "PIST"
+phen$species[phen$SPECIES == "Platanus occidentalis"] <- "PLOC"
+phen$species[phen$SPECIES == "Quercus alba"] <- "QUAL"
+phen$species[phen$SPECIES == "Quercus rubra"] <- "QURU"
+phen$species[phen$SPECIES == "Ulmus americana"] <- "ULMA"
 
 # Summarize data for manipulation
 ColorFallLong <- phen %>% 
@@ -89,6 +102,7 @@ WeekSum <- PlotWeatherWeek %>%
                   MeanTemp = mean(mean_temp),
                   GDD = mean(gdd),
                   TempDiff = mean(temp_diff))
+
 
 # At what point did the values reach 50%? If they reached 50%?
 ColorFall50 <- ColorFallLong %>% 
