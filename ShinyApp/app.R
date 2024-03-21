@@ -23,9 +23,9 @@ WendyPathMSU <- 'C:/Users/leuenbe9/OneDrive\ -\ Michigan\ State\ University/GitH
 KaraPath <- "/Users/karachristinad/Library/CloudStorage/OneDrive-MichiganStateUniversity/CSS 844/Module 3/PhenologyData/"
 
 # Change Path to your path for the code 
-#phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2022.csv"))
+phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2021.csv"))
 # phen<-read.csv("/Users/briannabrown/PhenologyShiny/ShinyApp/CleanedPhenologyData2017to2022.csv")
-phen<-read.csv("CleanedPhenologyData2017to2022.csv")
+#phen<-read.csv("CleanedPhenologyData2017to2022.csv")
 # Phenology data
 # phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2022.csv"))
 # phen<-read.csv(paste0(WendyPathMSU, "CleanedPhenologyData2017to2022.csv"))
