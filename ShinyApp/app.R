@@ -1,9 +1,12 @@
+# TITLE:          Tree phenology Shiny
+# AUTHORS:        Kara Dobson, Wendy Leuenberger, Brianna Brown
+# COLLABORATORS:  Tammy Long, Seth Hunt
+
+
 # Load shiny
 library(shiny)
 library(magrittr)
 library(tidyverse)
-# geosphere is for daylength. Can probably remove once we merge Group 3's data
-# library(geosphere)
 # ggarrange
 library(ggpubr)
 # Dates
@@ -23,9 +26,9 @@ WendyPathMSU <- 'C:/Users/leuenbe9/OneDrive\ -\ Michigan\ State\ University/GitH
 KaraPath <- "/Users/karachristinad/Library/CloudStorage/OneDrive-MichiganStateUniversity/CSS 844/Module 3/PhenologyData/"
 
 # Change Path to your path for the code 
-phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2021.csv"))
+#phen<-read.csv(paste0(KaraPath, "CleanedPhenologyData2017to2021.csv"))
 # phen<-read.csv("/Users/briannabrown/PhenologyShiny/ShinyApp/CleanedPhenologyData2017to2022.csv")
-#phen<-read.csv("CleanedPhenologyData2017to2022.csv")
+phen<-read.csv("CleanedPhenologyData2017to2022.csv")
 # Phenology data
 # phen<-read.csv(paste0(WendyPath, "CleanedPhenologyData2017to2022.csv"))
 # phen<-read.csv(paste0(WendyPathMSU, "CleanedPhenologyData2017to2022.csv"))
@@ -142,44 +145,6 @@ ysp <- ylab('Spring precipitation (mm)')
 # removing daylength variable from this dataframe so the first plot is only color + fall faceted
 ColorFallLong_nolength <- ColorFallLong[ColorFallLong$ColorFall != "Length", ]
 
-# # Test plot outside of shiny
-# # Daily data
-# ggplot(PlotWeatherWeek, 
-#        aes(x = Week, y = temp_diff, color = Year, fill = Year)) +
-#   gs + tbw + ytd
-# ggplot(PlotWeatherWeek, 
-#        aes(x = Week, y = DayHr, color = Year, fill = Year)) +
-#   gs + tbw + ydl
-# ggplot(PlotWeatherWeek,
-#        aes(x = Week, y = prcp..mm.day., color = Year, fill = Year)) + 
-#   gs + tbw + ypr
-# ggplot(PlotWeatherWeek,
-#        aes(x = Week, y = mean_temp, color = Year, fill = Year)) + 
-#   gs + tbw + yt
-# ggplot(PlotWeatherWeek,
-#        aes(x = Week, y = gdd, color = Year, fill = Year)) + 
-#   gs + tbw + ygdd
-# 
-# # Weekly means
-# ggplot(WeekSum,
-#        aes(x = Week, y = TempDiff, color = Year, fill = Year)) +
-#   gs0.9 + tbw + ytd
-# ggplot(WeekSum,
-#        aes(x = Week, y = DayHr, color = Year, fill = Year)) +
-#   gs + tbw + ydl
-# ggplot(WeekSum,
-#        aes(x = Week, y = Precip_mm, color = Year, fill = Year)) +
-#   gs0.9 + tbw + ypr
-# ggplot(WeekSum,
-#        aes(x = Week, y = MeanTemp, color = Year, fill = Year)) +
-#   gs + tbw + yt
-# ggplot(WeekSum,
-#        aes(x = Week, y = GDD, color = Year, fill = Year)) +
-#   gs + tbw + ygdd
-# ggplot(WeekSum,
-#        aes(x = Year, y = spring_precip, color = Year, fill = Year)) +
-#   geom_bar(stat = 'identity') + tbw + ysp
-
 # wide to long for selecting an input & fixing weather var names & removing spring precip from this dataframe
 WeekSum_long <- WeekSum %>%
         gather(key=weather_var, value=value, -Year, -Week)
@@ -189,23 +154,6 @@ WeekSum_long$weather_var[WeekSum_long$weather_var == "MeanTemp"] <- "Mean temper
 WeekSum_long$weather_var[WeekSum_long$weather_var == "TempDiff"] <- "Temperature differential (max temp - min temp)"
 WeekSum_long$weather_var[WeekSum_long$weather_var == "Precip_mm"] <- "Precipitation (mm)"
 WeekSum_long2 <- WeekSum_long[!grepl("spring_precip",WeekSum_long$weather_var),]
-
-# Within year among species
-# ggplot(ColorFallLong %>% filter(Year == 2018),
-#        aes(x = Week, y = Values, group = SPECIES)) +
-#   geom_smooth(aes(color = SPECIES, fill = SPECIES)) +
-#   labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
-#   tbw + ylim(-5, 105) + #xlim(36, 49) +
-#   fwys
-# # Just oaks and maples
-# ggplot(ColorFallLong %>% 
-#          filter(Year == 2018, 
-#                 species %in% c('ACRU', 'ACSA', 'QUAL', 'QURU')),
-#        aes(x = Week, y = Values, group = SPECIES)) +
-#   geom_smooth(aes(color = SPECIES, fill = SPECIES)) +
-#   labs(x="Week of Year", y="Percent of Leaf Color/Fall") +
-#   tbw + ylim(-5, 105) + #xlim(36, 49) +
-#   fwys
 
 # Box plots for within year among species
 ggplot(ColorFall50 %>% filter(Year == 2021),
