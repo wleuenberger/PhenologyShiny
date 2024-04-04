@@ -7,7 +7,7 @@ Phenology data and shiny creation for lesson plan
 
 ## Data
 
-[CleanedPhenologyData2017to2023.csv](CleanedPhenologyData2017to2023.csv): This file contains all of the data and is cleaned. This file is created from the [DataManagement.Rmd](DataManagement.Rmd) code for 2017-2022; 2023 data was copied into this file from the raw excel sheet for 2023.  
+[CleanedPhenologyData2017to2023.csv](/ShinyApp/CleanedPhenologyData2017to2023.csv): This file contains all of the data and is cleaned. This file is created from the [DataManagement.Rmd](DataManagement.Rmd) code for 2017-2022; 2023 data was copied into this file from the raw excel sheet for 2023.  
 
 [weather_data_daymet_newvariablesApr2024.csv](weather_data_daymet_newvariablesApr2024.csv): Complete weather data  
 
