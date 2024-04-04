@@ -1,5 +1,5 @@
 # PhenologyShiny
-This Shiny app utilized phenology data collected by students on the MSU campus. The data input into the Shiny contains percentage of leaf color and leaf fall for multiple tree species at MSU from 2017-2023. Weather data is also input into the Shiny to allow for comparisons between phenology and temperature, precipitation, etc.
+This Shiny app utilizes phenology data collected by students on the MSU campus. The data input into the Shiny contains percentage of leaf color and leaf fall for multiple tree species at MSU from 2017-2023. Weather data is also input into the Shiny to allow for comparisons between phenology and temperature, precipitation, etc.
 
 ### Wendy Leuenberger, Kara Dobson, Brianna Brown, Harry Shomer, Abby Bryson
 
