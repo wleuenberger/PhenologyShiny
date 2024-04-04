@@ -7,6 +7,10 @@ output:
     keep_md: true
 ---
 
+## Note:  
+# 2023 data was copied directly into the previous year's complete data frame (i.e., "CleanedPhenologyData2017to2022.csv)  
+# Because we've successfully merged all previous years, moving forward, the new year's data can be copied in at the bottom of the previously complete data frame. E.g., 2024 data can be copied into the bottom of "CleanedPhenologyData2017to2024.csv"
+
 ```{r setup, include=FALSE}
 rm(list=ls()) #remove all previous variables
 knitr::opts_chunk$set(echo = TRUE)
