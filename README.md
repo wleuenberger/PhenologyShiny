@@ -7,27 +7,18 @@ Phenology data and shiny creation for lesson plan
 
 ## Data
 
-[CleanedPhenologyData2017to2023.csv](CleanedPhenologyData2017to2023.csv): This file contains all of the data and is cleaned. This file is created from the [DataManagement.Rmd](DataManagement.Rmd) code for 2017-2022; 2023 data was copied into this file from the raw excel sheet for 2023.
+[CleanedPhenologyData2017to2023.csv](CleanedPhenologyData2017to2023.csv): This file contains all of the data and is cleaned. This file is created from the [DataManagement.Rmd](DataManagement.Rmd) code for 2017-2022; 2023 data was copied into this file from the raw excel sheet for 2023.  
 
-[test_form5_2019_12_19_14_56_01_542496.csv](test_form5_2019_12_19_14_56_01_542496.csv): 2017 data
-
-[Form_BS162_2018_v2_2019_12_19_14_56_54_642030.csv](Form_BS162_2018_v2_2019_12_19_14_56_54_642030.csv): 2018 data
-
-[Form_BS162_2019_2019_12_19_14_57_47_271712.csv](Form_BS162_2019_2019_12_19_14_57_47_271712.csv): 2019 data
-
-2021Fall_TreePhenologyData_All_wPhotoLinks.xlsx: 2021 data. This data is in a different format than the previous years
-
-[weather_data_daymet_newvariablesApr2024.csv](weather_data_daymet_newvariablesApr2024.csv): Weather data from Group 3.
-
-[11928_lat_42.7257_lon_-84.4777_2022-04-18_152926.csv](11928_lat_42.7257_lon_-84.4777_2022-04-18_152926.csv): Initial weather data from Group 3. [weather_data_daymet_newvariablesApr2024.csv](weather_data_daymet_newvariablesApr2024.csv) is the updated version
+[weather_data_daymet_newvariablesApr2024.csv](weather_data_daymet_newvariablesApr2024.csv): Complete weather data  
 
 ## Metadata
 
-[WeatherDataCollectionDocument.docx](WeatherDataCollectionDocument.docx): Metadata from Group 3 on how they collected weather data and processed to create some of the columns that we needed
+[WeatherDataCollectionDocument.docx](WeatherDataCollectionDocument.docx): Metadata from Group 3 on how they collected weather data and processed to create some of the columns that we needed. For each new year, data is downloaded from DayMet, copied into the previously complete weather data csv, and the functions are applied to create any new columns.  
 
 ## Code
 
-[DataManagement.Rmd](DataManagement.Rmd): R code to process all four data files and produce [CleanedPhenologyData2017to2023](CleanedPhenologyData2017to2023.csv). Also produces [DataManagement.md](DataManagement.md) (readable on GitHub) and [DataManagement.html](DataManagement.html) (readable in browser) that detail the data cleaning process. [DataManagement_files](DataManagement_files) is also part of this process.
+This file was used to merge data for 2017-2022. Moving forward, starting with 2023 data, it can be copied at the end of the previously complete data frame.  
+[DataManagement.Rmd](DataManagement.Rmd): R code to process all four data files and produce [CleanedPhenologyData2017to2022](CleanedPhenologyData2017to2022.csv). Also produces [DataManagement.md](DataManagement.md) (readable on GitHub) and [DataManagement.html](DataManagement.html) (readable in browser) that detail the data cleaning process. [DataManagement_files](DataManagement_files) is also part of this process.
 
 ## Shiny
 
